@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KIRA SAVE - Compartilhe seus Saves de Games</title>
+    <meta name="description" content="Plataforma moderna para compartilhamento de saves de jogos">
+    <meta name="keywords" content="saves, jogos, game saves, compartilhar saves, download saves">
+    <meta name="author" content="KIRA SAVE">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://kirasave.online">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://kirasave.online">
+    <meta property="og:title" content="KIRA SAVE - Compartilhe seus Saves de Games">
+    <meta property="og:description" content="Plataforma moderna para compartilhamento de saves de jogos">
+    <meta property="og:image" content="https://kirasave.online/images/logo.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://kirasave.online">
+    <meta property="twitter:title" content="KIRA SAVE - Compartilhe seus Saves de Games">
+    <meta property="twitter:description" content="Plataforma moderna para compartilhamento de saves de jogos">
+    <meta property="twitter:image" content="https://kirasave.online/images/logo.png">
+
+    <!-- Google AdSense Code -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2400971758931883"
+         crossorigin="anonymous"></script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="bg-gray-900 text-white">
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="fixed inset-0 bg-gray-900 z-50 flex items-center justify-center">
+        <div class="text-center">
+            <div class="loading-spinner mb-4">
+                <img src="/images/logo.png" alt="KIRA SAVE" class="h-20 mx-auto animate-pulse">
+            </div>
+            <div class="mt-4 w-48 h-1 bg-gray-700 rounded-full overflow-hidden">
+                <div class="h-full bg-gradient-to-r from-purple-500 to-cyan-500 loading-bar"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-40 bg-gray-900/95 backdrop-blur-md border-b border-purple-500/20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-14">
+                <!-- Logo -->
+                <a href="/" class="flex items-center space-x-2">
+                    <img src="/images/logo.png" alt="KIRA SAVE" class="h-8">
+                </a>
+
+                <!-- Desktop Navigation -->
+                <div class="hidden md:flex items-center space-x-6">
+                    <a href="/" class="nav-link text-gray-300 hover:text-purple-400 transition-colors">
+                        <i class="fas fa-home mr-1"></i> Início
+                    </a>
+                    <a href="/saves" class="nav-link text-gray-300 hover:text-purple-400 transition-colors">
+                        <i class="fas fa-save mr-1"></i> Saves
+                    </a>
+                    <a href="/upload" class="nav-link text-gray-300 hover:text-purple-400 transition-colors">
+                        <i class="fas fa-upload mr-1"></i> Upload
+                    </a>
+                    <div id="auth-nav" class="flex items-center space-x-4">
+                        <!-- Will be populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Mobile menu button -->
+                <button id="mobile-menu-btn" class="md:hidden text-gray-300 hover:text-purple-400">
+                    <i class="fas fa-bars text-2xl"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Navigation -->
+        <div id="mobile-menu" class="hidden md:hidden bg-gray-800 border-t border-purple-500/20">
+            <div class="px-4 py-3 space-y-2">
+                <a href="/" class="block py-2 text-gray-300 hover:text-purple-400">Início</a>
+                <a href="/saves" class="block py-2 text-gray-300 hover:text-purple-400">Saves</a>
+                <a href="/upload" class="block py-2 text-gray-300 hover:text-purple-400">Upload</a>
+                <div id="mobile-auth-nav" class="pt-2 border-t border-gray-700">
+                    <!-- Will be populated by JS -->
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Top Banner Ad -->
+    <div id="ad-banner-top" class="pt-16 bg-gray-800 border-b border-gray-700">
+        <div class="max-w-7xl mx-auto px-4 py-2">
+            <div class="ad-placeholder bg-gray-700 rounded-lg flex items-center justify-center min-h-[90px]">
+                <span class="text-gray-400 text-sm">Espaço para anúncio - Google AdSense / Ads</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main id="app" class="pt-0 overflow-visible">
+        <!-- Content will be dynamically loaded here -->
+    </main>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
+
+    <!-- Modal -->
+    <div id="modal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" id="modal-backdrop"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div id="modal-content" class="bg-gray-800 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-purple-500/30">
+                <!-- Modal content will be dynamically loaded -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 border-t border-purple-500/20 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <img src="/images/logo.png" alt="KIRA SAVE" class="h-10">
+                    </div>
+                    <p class="text-gray-400 text-sm">
+                        A melhor plataforma para compartilhar e descobrir saves de jogos.
+                    </p>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-white mb-4">Links Rápidos</h3>
+                    <ul class="space-y-2 text-gray-400 text-sm">
+                        <li><a href="/" class="hover:text-purple-400 transition-colors">Início</a></li>
+                        <li><a href="/saves" class="hover:text-purple-400 transition-colors">Saves</a></li>
+                        <li><a href="/upload" class="hover:text-purple-400 transition-colors">Upload</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-white mb-4">Suporte</h3>
+                    <ul class="space-y-2 text-gray-400 text-sm">
+                        <li><a href="#" class="hover:text-purple-400 transition-colors">FAQ</a></li>
+                        <li><a href="#" class="hover:text-purple-400 transition-colors">Contato</a></li>
+                        <li><a href="#" class="hover:text-purple-400 transition-colors">Termos de Uso</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-white mb-4">Redes Sociais</h3>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-purple-400 transition-colors text-xl">
+                            <i class="fab fa-discord"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-purple-400 transition-colors text-xl">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-purple-400 transition-colors text-xl">
+                            <i class="fab fa-youtube"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-8 pt-8 border-t border-gray-700 text-center text-gray-400 text-sm">
+                <p>&copy; 2024 KIRA SAVE. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bottom Banner Ad -->
+    <div id="ad-banner-bottom" class="bg-gray-800 border-t border-gray-700">
+        <div class="max-w-7xl mx-auto px-4 py-2">
+            <div class="ad-placeholder bg-gray-700 rounded-lg flex items-center justify-center min-h-[90px]">
+                <span class="text-gray-400 text-sm">Espaço para anúncio - Google AdSense / Ads</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom JavaScript -->
+    <script src="/js/app.js"></script>
+</body>
+</html>

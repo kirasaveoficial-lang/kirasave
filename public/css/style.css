@@ -1,0 +1,2451 @@
+/* ===== Custom Properties ===== */
+:root {
+    --primary-purple: #8b5cf6;
+    --primary-cyan: #06b6d4;
+    --primary-green: #10b981;
+    --dark-bg: #111827;
+    --card-bg: rgba(31, 41, 55, 0.8);
+    --glass-border: rgba(139, 92, 246, 0.2);
+}
+
+/* ===== Base Styles ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--dark-bg);
+    color: #fff;
+    overflow-x: hidden;
+    overflow-y: visible;
+}
+
+/* ===== Loading Screen ===== */
+.loading-bar {
+    animation: loading 2s ease-in-out infinite;
+}
+
+@keyframes loading {
+    0% { width: 0%; }
+    50% { width: 70%; }
+    100% { width: 100%; }
+}
+
+/* ===== Glassmorphism Cards ===== */
+.glass-card {
+    background: var(--card-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 1rem;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.glass-card::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 1rem;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(139, 92, 246, 0.5), rgba(139, 92, 246, 0.3));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: -1;
+    filter: blur(8px);
+}
+
+.glass-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(139, 92, 246, 0.2);
+    border-color: var(--primary-purple);
+}
+
+.glass-card:hover::before {
+    opacity: 1;
+}
+
+/* ===== Gradient Text ===== */
+.gradient-text {
+    color: var(--primary-purple);
+}
+
+/* ===== Gaming Grid Background ===== */
+.gaming-grid {
+    background-image:
+        linear-gradient(rgba(139, 92, 246, 0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(139, 92, 246, 0.1) 1px, transparent 1px);
+    background-size: 50px 50px;
+    animation: gridMove 20s linear infinite;
+}
+
+@keyframes gridMove {
+    0% { background-position: 0 0; }
+    100% { background-position: 50px 50px; }
+}
+
+/* ===== Particles Animation ===== */
+.particles {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+}
+
+.particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: var(--primary-purple);
+    border-radius: 50%;
+    animation: float 15s infinite;
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(100vh) rotate(0deg);
+        opacity: 0.5;
+    }
+    10% {
+        opacity: 0.8;
+    }
+    90% {
+        opacity: 0.8;
+    }
+    100% {
+        transform: translateY(-100vh) rotate(720deg);
+        opacity: 0.5;
+    }
+}
+
+/* ===== Glow Effects ===== */
+.glow-purple {
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+}
+
+.glow-cyan {
+    box-shadow: 0 0 20px rgba(6, 182, 212, 0.5);
+}
+
+.glow-green {
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+}
+
+/* ===== Button Styles ===== */
+.btn-primary {
+    background: var(--primary-purple);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.btn-primary:hover::before {
+    left: 100%;
+}
+
+.btn-primary:hover {
+    transform: scale(1.05);
+    box-shadow: 0 10px 30px rgba(139, 92, 246, 0.4);
+}
+
+.btn-secondary {
+    background: transparent;
+    color: var(--primary-purple);
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: 2px solid var(--primary-purple);
+    cursor: pointer;
+}
+
+.btn-secondary:hover {
+    background: var(--primary-purple);
+    color: white;
+    transform: scale(1.05);
+}
+
+/* ===== Input Styles ===== */
+.input-field {
+    background: rgba(31, 41, 55, 0.8);
+    border: 1px solid var(--glass-border);
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    color: white;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.input-field:focus {
+    outline: none;
+    border-color: var(--primary-purple);
+    box-shadow: 0 0 10px rgba(139, 92, 246, 0.3);
+}
+
+.input-field::placeholder {
+    color: #9ca3af;
+}
+
+/* Ensure inputs don't have default arrows */
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"] {
+    color-scheme: dark;
+}
+
+/* ===== Card Hover Effects ===== */
+.save-card {
+    transition: all 0.3s ease;
+    cursor: pointer;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: visible;
+    background: #0f0f1a;
+    border: 2px solid #8b5cf6;
+    position: relative;
+}
+
+.save-card:hover {
+    transform: translateY(-5px);
+    z-index: 10;
+    box-shadow: 0 10px 30px rgba(139, 92, 246, 0.4);
+    border-color: #a78bfa;
+}
+
+.save-card:hover .card-image {
+    transform: scale(1.05);
+}
+
+/* ===== Grid Items Equal Height ===== */
+.grid-cols-1 > div,
+.grid-cols-2 > div,
+.grid-cols-3 > div,
+.grid-cols-4 > div {
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+}
+
+.card-image {
+    transition: transform 0.5s ease;
+}
+
+/* ===== Rating Stars ===== */
+.star-rating {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.star {
+    color: #4b5563;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.star.filled {
+    color: #fbbf24;
+}
+
+.star:hover {
+    color: #fbbf24;
+}
+
+/* ===== Progress Bar ===== */
+.progress-bar {
+    height: 8px;
+    background: rgba(31, 41, 55, 0.8);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--primary-purple);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+/* ===== Toast Notifications ===== */
+.toast {
+    background: var(--card-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 0.5rem;
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    animation: slideIn 0.3s ease;
+    max-width: 400px;
+}
+
+.toast.success {
+    border-color: var(--primary-green);
+}
+
+.toast.error {
+    border-color: #ef4444;
+}
+
+.toast.warning {
+    border-color: #f59e0b;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+/* ===== Modal Animation ===== */
+.modal-enter {
+    animation: modalIn 0.3s ease;
+}
+
+.modal-exit {
+    animation: modalOut 0.3s ease;
+}
+
+@keyframes modalIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes modalOut {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+}
+
+/* ===== Scrollbar ===== */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--dark-bg);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary-purple);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-cyan);
+}
+
+/* ===== Advertisement Spaces ===== */
+.ad-placeholder {
+    background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+    border: 2px dashed #4b5563;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.ad-placeholder::before {
+    content: 'ADVERTISEMENT';
+    position: absolute;
+    top: 4px;
+    right: 8px;
+    font-size: 8px;
+    color: #6b7280;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.ad-banner-728x90 {
+    width: 100%;
+    max-width: 728px;
+    height: 90px;
+    margin: 0 auto;
+}
+
+.ad-sidebar-300x250 {
+    width: 300px;
+    height: 250px;
+    margin: 0 auto;
+}
+
+.ad-sidebar-300x600 {
+    width: 300px;
+    height: 600px;
+    margin: 0 auto;
+}
+
+.ad-responsive {
+    width: 100%;
+    min-height: 250px;
+}
+
+/* ===== Lazy Loading ===== */
+.lazy-image {
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+/* ===== Search Autocomplete ===== */
+.autocomplete-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--card-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 0.5rem;
+    margin-top: 0.5rem;
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 50;
+}
+
+.autocomplete-item {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.autocomplete-item:hover {
+    background: rgba(139, 92, 246, 0.2);
+}
+
+/* ===== Drag and Drop Zone ===== */
+.drop-zone {
+    border: 2px dashed var(--glass-border);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    background: rgba(31, 41, 55, 0.5);
+}
+
+.drop-zone.dragover {
+    border-color: var(--primary-purple);
+    background: rgba(139, 92, 246, 0.15);
+    transform: scale(1.02);
+}
+
+.drop-zone:hover {
+    border-color: var(--primary-cyan);
+    background: rgba(31, 41, 55, 0.7);
+}
+
+/* ===== Game Autocomplete ===== */
+#game-suggestions {
+    animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.game-suggestion {
+    transition: all 0.2s ease;
+}
+
+.game-suggestion:hover {
+    background: rgba(139, 92, 246, 0.2);
+    transform: translateX(4px);
+}
+
+/* ===== Form Animations ===== */
+.input-field {
+    transition: all 0.3s ease;
+}
+
+.input-field:focus {
+    transform: translateY(-2px);
+}
+
+/* ===== Button Loading Animation ===== */
+.btn-primary:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* ===== Badge ===== */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.badge-purple {
+    background: rgba(139, 92, 246, 0.2);
+    color: var(--primary-purple);
+}
+
+.badge-cyan {
+    background: rgba(6, 182, 212, 0.2);
+    color: var(--primary-cyan);
+}
+
+.badge-green {
+    background: rgba(16, 185, 129, 0.2);
+    color: var(--primary-green);
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+    .glass-card {
+        border-radius: 0.75rem;
+    }
+
+    .btn-primary,
+    .btn-secondary {
+        padding: 0.625rem 1.25rem;
+        font-size: 0.875rem;
+    }
+}
+
+/* ===== Animation Classes ===== */
+.fade-in {
+    animation: fadeIn 0.5s ease;
+}
+
+.slide-up {
+    animation: slideUp 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ===== Counter Animation ===== */
+.counter {
+    font-variant-numeric: tabular-nums;
+}
+
+/* ===== Notification Badge ===== */
+
+/* ===== Tag Badges ===== */
+.tag-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: white;
+    background: var(--primary-purple);
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+    transition: all 0.3s ease;
+    animation: tagGlow 2s ease-in-out infinite;
+}
+
+.tag-badge:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+}
+
+@keyframes tagGlow {
+    0%, 100% {
+        box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+    }
+    50% {
+        box-shadow: 0 4px 25px rgba(139, 92, 246, 0.5);
+    }
+}
+
+/* ===== Admin Tabs ===== */
+.admin-tab {
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.admin-tab::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--primary-purple);
+    transition: width 0.3s ease;
+}
+
+.admin-tab:hover::after {
+    width: 100%;
+}
+
+.admin-tab-content {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ===== Notification Badge ===== */
+.notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #ef4444;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+/* ===== Gallery ===== */
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1rem;
+}
+
+.gallery-item {
+    aspect-ratio: 16/9;
+    overflow: hidden;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.gallery-item:hover {
+    transform: scale(1.05);
+}
+
+.gallery-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* ===== Avatar ===== */
+.avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    object-position: center;
+    border: 2px solid var(--primary-purple);
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+    background: linear-gradient(135deg, var(--primary-purple), #9333ea);
+    display: block;
+}
+
+.avatar:hover {
+    box-shadow: 0 0 15px rgba(139, 92, 246, 0.5);
+}
+
+/* ===== Username Glow Effect ===== */
+.username-glow {
+    text-shadow: 0 0 10px rgba(139, 92, 246, 0.8),
+                 0 0 20px rgba(139, 92, 246, 0.6),
+                 0 0 30px rgba(139, 92, 246, 0.4);
+    animation: usernameGlow 2s ease-in-out infinite;
+}
+
+
+
+@keyframes usernameGlow {
+    0%, 100% {
+        text-shadow: 0 0 10px rgba(139, 92, 246, 0.8),
+                     0 0 20px rgba(139, 92, 246, 0.6),
+                     0 0 30px rgba(139, 92, 246, 0.4);
+    }
+    50% {
+        text-shadow: 0 0 15px rgba(139, 92, 246, 1),
+                     0 0 30px rgba(139, 92, 246, 0.8),
+                     0 0 45px rgba(139, 92, 246, 0.6);
+    }
+}
+
+/* VIP Username Glow Effects */
+.username-glow.vip-gold {
+    color: #ffd700 !important;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.8) !important,
+                 0 0 20px rgba(255, 215, 0, 0.6) !important,
+                 0 0 30px rgba(255, 215, 0, 0.4) !important;
+    animation: usernameGlowGold 2s ease-in-out infinite !important;
+}
+
+.username-glow.vip-platinum {
+    color: #8b5cf6 !important;
+    text-shadow: 0 0 10px rgba(139, 92, 246, 0.8) !important,
+                 0 0 20px rgba(139, 92, 246, 0.6) !important,
+                 0 0 30px rgba(139, 92, 246, 0.4) !important;
+    animation: usernameGlowPlatinum 2s ease-in-out infinite !important;
+}
+
+.username-glow.vip-diamond {
+    color: #06b6d4 !important;
+    text-shadow: 0 0 10px rgba(6, 182, 212, 0.8) !important,
+                 0 0 20px rgba(6, 182, 212, 0.6) !important,
+                 0 0 30px rgba(6, 182, 212, 0.4) !important;
+    animation: usernameGlowDiamond 2s ease-in-out infinite !important;
+}
+
+.username-glow.vip-extreme {
+    color: #ff0000 !important;
+    text-shadow: 0 0 10px rgba(255, 0, 0, 0.8) !important,
+                 0 0 20px rgba(255, 0, 0, 0.6) !important,
+                 0 0 30px rgba(255, 0, 0, 0.4) !important;
+    animation: usernameGlowExtreme 2s ease-in-out infinite !important;
+}
+
+.username-glow.vip-gold {
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.8),
+                 0 0 20px rgba(255, 215, 0, 0.6),
+                 0 0 30px rgba(255, 215, 0, 0.4);
+    animation: usernameGlowGold 2s ease-in-out infinite;
+}
+
+@keyframes usernameGlowGold {
+    0%, 100% {
+        text-shadow: 0 0 10px rgba(255, 215, 0, 0.8),
+                     0 0 20px rgba(255, 215, 0, 0.6),
+                     0 0 30px rgba(255, 215, 0, 0.4);
+    }
+    50% {
+        text-shadow: 0 0 15px rgba(255, 215, 0, 1),
+                     0 0 30px rgba(255, 215, 0, 0.8),
+                     0 0 45px rgba(255, 215, 0, 0.6);
+    }
+}
+
+.username-glow.vip-platinum {
+    text-shadow: 0 0 10px rgba(139, 92, 246, 0.8),
+                 0 0 20px rgba(139, 92, 246, 0.6),
+                 0 0 30px rgba(139, 92, 246, 0.4);
+    animation: usernameGlowPlatinum 2s ease-in-out infinite;
+}
+
+@keyframes usernameGlowPlatinum {
+    0%, 100% {
+        text-shadow: 0 0 10px rgba(139, 92, 246, 0.8),
+                     0 0 20px rgba(139, 92, 246, 0.6),
+                     0 0 30px rgba(139, 92, 246, 0.4);
+    }
+    50% {
+        text-shadow: 0 0 15px rgba(139, 92, 246, 1),
+                     0 0 30px rgba(139, 92, 246, 0.8),
+                     0 0 45px rgba(139, 92, 246, 0.6);
+    }
+}
+
+.username-glow.vip-diamond {
+    text-shadow: 0 0 10px rgba(6, 182, 212, 0.8),
+                 0 0 20px rgba(6, 182, 212, 0.6),
+                 0 0 30px rgba(6, 182, 212, 0.4);
+    animation: usernameGlowDiamond 2s ease-in-out infinite;
+}
+
+@keyframes usernameGlowDiamond {
+    0%, 100% {
+        text-shadow: 0 0 10px rgba(6, 182, 212, 0.8),
+                     0 0 20px rgba(6, 182, 212, 0.6),
+                     0 0 30px rgba(6, 182, 212, 0.4);
+    }
+    50% {
+        text-shadow: 0 0 15px rgba(6, 182, 212, 1),
+                     0 0 30px rgba(6, 182, 212, 0.8),
+                     0 0 45px rgba(6, 182, 212, 0.6);
+    }
+}
+
+.username-glow.vip-extreme {
+    text-shadow: 0 0 10px rgba(255, 0, 0, 0.8),
+                 0 0 20px rgba(255, 0, 0, 0.6),
+                 0 0 30px rgba(255, 0, 0, 0.4);
+    animation: usernameGlowExtreme 2s ease-in-out infinite;
+}
+
+@keyframes usernameGlowExtreme {
+    0%, 100% {
+        text-shadow: 0 0 10px rgba(255, 0, 0, 0.8),
+                     0 0 20px rgba(255, 0, 0, 0.6),
+                     0 0 30px rgba(255, 0, 0, 0.4);
+    }
+    50% {
+        text-shadow: 0 0 15px rgba(255, 0, 0, 1),
+                     0 0 30px rgba(255, 0, 0, 0.8),
+                     0 0 45px rgba(255, 0, 0, 0.6);
+    }
+}
+
+.avatar-lg {
+    width: 100px;
+    height: 100px;
+}
+
+/* ===== Profile Avatar (Discord-style) ===== */
+.profile-avatar {
+    border: 4px solid #1f2937;
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+    background: linear-gradient(135deg, var(--primary-purple), #9333ea);
+    object-fit: cover;
+    object-position: center;
+}
+
+/* ===== Avatar Dropdown ===== */
+#avatar-dropdown {
+    animation: dropdownFadeIn 0.2s ease-out;
+}
+
+@keyframes dropdownFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+#avatar-dropdown a,
+#avatar-dropdown button {
+    position: relative;
+    overflow: hidden;
+}
+
+#avatar-dropdown a::before,
+#avatar-dropdown button::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 3px;
+    background: linear-gradient(to bottom, var(--primary-purple), #9333ea);
+    transform: scaleY(0);
+    transition: transform 0.3s ease;
+}
+
+#avatar-dropdown a:hover::before,
+#avatar-dropdown button:hover::before {
+    transform: scaleY(1);
+}
+
+/* ===== Profile Page Styles ===== */
+.profile-container {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.profile-banner {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(139, 92, 246, 0.2) 50%, rgba(139, 92, 246, 0.1) 100%);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.profile-banner::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(139, 92, 246, 0.1) 0%, transparent 70%);
+    animation: rotate 20s linear infinite;
+}
+
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.particles-mini {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+}
+
+.profile-avatar {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.profile-avatar:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 30px rgba(139, 92, 246, 0.6);
+}
+
+.profile-username {
+    animation: slideInLeft 0.6s ease-out 0.2s both;
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.profile-bio {
+    animation: slideInRight 0.6s ease-out 0.3s both;
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.profile-tags {
+    animation: fadeIn 0.6s ease-out 0.4s both;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.tag-badge-modern {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    color: #fff !important;
+    text-shadow: 0 0 10px currentColor;
+    position: relative;
+    cursor: pointer;
+}
+
+.tag-badge-modern::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 22px;
+    background: inherit;
+    filter: blur(8px);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: -1;
+}
+
+.tag-badge-modern:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 5px 20px rgba(139, 92, 246, 0.4), 0 0 30px currentColor;
+}
+
+.tag-badge-modern:hover::before {
+    opacity: 0.6;
+}
+
+/* ===== Tag Tooltip ===== */
+.tag-badge-modern .tag-tooltip {
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    background: rgba(17, 24, 39, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 8px;
+    padding: 8px 12px;
+    white-space: nowrap;
+    font-size: 12px;
+    color: #fff;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 100;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.tag-badge-modern .tag-tooltip::before {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: rgba(139, 92, 246, 0.3);
+}
+
+.tag-badge-modern:hover .tag-tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+
+.profile-stat-card {
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.profile-stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.5s ease;
+}
+
+.profile-stat-card:hover::before {
+    left: 100%;
+}
+
+.profile-stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(139, 92, 246, 0.3);
+    border-color: rgba(139, 92, 246, 0.5);
+}
+
+.stat-number {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 700;
+}
+
+.profile-content-card {
+    animation: fadeInUp 0.6s ease-out 0.5s both;
+}
+
+.profile-tab-btn {
+    padding: 8px 16px;
+    border: none;
+    background: transparent;
+    color: #9ca3af;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-radius: 6px;
+    position: relative;
+    overflow: hidden;
+    font-size: 0.875rem;
+}
+
+.profile-tab-btn::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary-purple), #9333ea);
+    transition: all 0.3s ease;
+    transform: translateX(-50%);
+}
+
+.profile-tab-btn:hover {
+    color: #fff;
+    background: rgba(139, 92, 246, 0.1);
+}
+
+.profile-tab-btn.active {
+    color: #fff;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(139, 92, 246, 0.4));
+}
+
+.profile-tab-btn.active::before {
+    width: 80%;
+}
+
+.profile-tab-btn:hover::before {
+    width: 60%;
+}
+
+/* ===== Mini Particles ===== */
+.particle-mini {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: rgba(139, 92, 246, 0.6);
+    border-radius: 50%;
+    animation: floatParticle 10s infinite ease-in-out;
+}
+
+@keyframes floatParticle {
+    0%, 100% {
+        transform: translateY(0) translateX(0);
+        opacity: 0;
+    }
+    10% {
+        opacity: 1;
+    }
+    90% {
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(-100px) translateX(50px);
+        opacity: 0;
+    }
+}
+
+/* ===== Platform Icons ===== */
+.platform-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    background: rgba(31, 41, 55, 0.8);
+}
+
+.platform-icon.playstation {
+    color: #003791;
+}
+
+.platform-icon.xbox {
+    color: #107c10;
+}
+
+.platform-icon.steam {
+    color: #171a21;
+}
+
+.platform-icon.nintendo {
+    color: #e60012;
+}
+
+/* ===== Discord-style Profile Card ===== */
+.discord-profile-card {
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.discord-profile-card:hover {
+    transform: translateY(-2px);
+}
+
+/* VIP Card Effects */
+.discord-profile-card.vip-gold {
+    border: 2px solid #ffd700 !important;
+}
+
+.discord-profile-card.vip-platinum {
+    border: 2px solid #8b5cf6 !important;
+}
+
+.discord-profile-card.vip-diamond {
+    border: 2px solid #06b6d4 !important;
+}
+
+.discord-profile-card.vip-extreme {
+    border: 2px solid #ff0000 !important;
+}
+
+/* VIP Avatar Border Effects */
+.profile-avatar.vip-gold {
+    border-color: #ffd700 !important;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.5) !important;
+}
+
+.profile-avatar.vip-platinum {
+    border-color: #06b6d4 !important;
+    box-shadow: 0 0 15px rgba(6, 182, 212, 0.5) !important;
+}
+
+.profile-avatar.vip-diamond {
+    border-color: #06b6d4 !important;
+    box-shadow: 0 0 15px rgba(6, 182, 212, 0.5) !important;
+}
+
+.profile-avatar.vip-extreme {
+    border-color: #ff0000 !important;
+    box-shadow: 0 0 15px rgba(255, 0, 0, 0.5) !important;
+}
+
+/* VIP Avatar Glow Effect */
+.profile-avatar-glow.vip-gold {
+    background: linear-gradient(135deg, #ffd700, #ff8c00) !important;
+}
+
+.profile-avatar-glow.vip-platinum {
+    background: linear-gradient(135deg, #8b5cf6, #a78bfa) !important;
+}
+
+.profile-avatar-glow.vip-diamond {
+    background: linear-gradient(135deg, #06b6d4, #22d3ee) !important;
+}
+
+.profile-avatar-glow.vip-extreme {
+    background: linear-gradient(135deg, #ff0000, #ff4444) !important;
+}
+
+/* VIP Banner Particles */
+.vip-gold .particle-mini {
+    background: rgba(255, 215, 0, 0.6) !important;
+    box-shadow: 0 0 6px rgba(255, 215, 0, 0.8) !important;
+}
+
+.vip-platinum .particle-mini {
+    background: rgba(139, 92, 246, 0.6) !important;
+    box-shadow: 0 0 6px rgba(139, 92, 246, 0.8) !important;
+}
+
+.vip-diamond .particle-mini {
+    background: rgba(6, 182, 212, 0.6) !important;
+    box-shadow: 0 0 6px rgba(6, 182, 212, 0.8) !important;
+}
+
+.vip-extreme .particle-mini {
+    background: rgba(255, 0, 0, 0.6) !important;
+    box-shadow: 0 0 6px rgba(255, 0, 0, 0.8) !important;
+}
+
+/* VIP Banner Effect */
+.profile-banner.vip-gold {
+    background: rgba(255, 215, 0, 0.15) !important;
+    border-color: rgba(255, 215, 0, 0.3) !important;
+}
+
+.profile-banner.vip-platinum {
+    background: rgba(139, 92, 246, 0.15) !important;
+    border-color: rgba(139, 92, 246, 0.3) !important;
+}
+
+.profile-banner.vip-diamond {
+    background: rgba(6, 182, 212, 0.15) !important;
+    border-color: rgba(6, 182, 212, 0.3) !important;
+}
+
+.profile-banner.vip-extreme {
+    background: rgba(255, 0, 0, 0.15) !important;
+    border-color: rgba(255, 0, 0, 0.3) !important;
+}
+
+.profile-avatar-glow {
+    animation: avatarGlow 3s ease-in-out infinite;
+    background: linear-gradient(135deg, #8b5cf6, #9333ea, #8b5cf6);
+}
+
+@keyframes avatarGlow {
+    0%, 100% {
+        opacity: 0.4;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.7;
+        transform: scale(1.05);
+    }
+}
+
+.profile-avatar {
+    transition: all 0.3s ease;
+}
+
+.profile-avatar:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 30px rgba(139, 92, 246, 0.6);
+}
+
+.status-online {
+    animation: none;
+}
+
+.status-offline {
+    animation: none;
+}
+
+.status-badge {
+    transition: all 0.3s ease;
+}
+
+.status-badge:hover {
+    transform: scale(1.05);
+}
+
+.admin-badge {
+    position: relative;
+    overflow: hidden;
+}
+
+/* ===== Animated Tags ===== */
+.tag-badge-animated {
+    animation: tagFloat 3s ease-in-out infinite;
+    position: relative;
+    overflow: hidden;
+}
+
+.tag-badge-animated::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.2),
+        transparent
+    );
+    transition: left 0.5s ease;
+}
+
+.tag-badge-animated:hover::before {
+    left: 100%;
+}
+
+.tag-badge-animated:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
+}
+
+@keyframes tagFloat {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-2px);
+    }
+}
+
+/* ===== Profile Stats ===== */
+.profile-stat-item {
+    transition: all 0.3s ease;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+}
+
+.profile-stat-item:hover {
+    background: rgba(139, 92, 246, 0.1);
+    transform: scale(1.05);
+}
+
+.profile-stat-item .stat-number {
+    transition: all 0.3s ease;
+}
+
+.profile-stat-item:hover .stat-number {
+    transform: scale(1.1);
+}
+
+/* ===== Profile Save Cards ===== */
+.profile-save-card {
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.profile-save-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary-purple), #9333ea);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.profile-save-card:hover::before {
+    transform: scaleX(1);
+}
+
+.profile-save-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 35px rgba(139, 92, 246, 0.3);
+    border-color: var(--primary-purple);
+}
+
+/* ===== Profile Save Cards Mini (Grid Layout) ===== */
+.profile-save-card-mini {
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    border-radius: 0.5rem;
+}
+
+.profile-save-card-mini::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--primary-purple), #9333ea);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.profile-save-card-mini:hover::before {
+    transform: scaleX(1);
+}
+
+.profile-save-card-mini:hover {
+    box-shadow: 0 10px 25px rgba(139, 92, 246, 0.4);
+    border-color: var(--primary-purple);
+}
+
+.platform-badge {
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.platform-badge:hover {
+    transform: scale(1.1);
+}
+
+/* ===== Enhanced Tab Buttons ===== */
+.profile-tab-btn {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.profile-tab-btn::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary-purple), #9333ea);
+    transition: all 0.3s ease;
+    transform: translateX(-50%);
+}
+
+.profile-tab-btn:hover::before {
+    width: 60%;
+}
+
+.profile-tab-btn.active::before {
+    width: 80%;
+}
+
+.profile-tab-btn.active {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(139, 92, 246, 0.4));
+    color: white;
+}
+
+/* ===== Responsive Profile ===== */
+@media (max-width: 1024px) {
+    .discord-profile-card {
+        margin-bottom: 1.5rem;
+    }
+    
+    .profile-avatar-glow {
+        opacity: 0.3;
+    }
+}
+
+@media (max-width: 768px) {
+    .profile-avatar {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .tag-badge-animated {
+        font-size: 0.75rem;
+        padding: 0.375rem 0.75rem;
+    }
+    
+    .profile-stat-item {
+        padding: 0.375rem;
+    }
+    
+    .profile-stat-item .stat-number {
+        font-size: 1rem;
+    }
+}
+
+/* ===== VIP Tags Styles ===== */
+
+/* VIP Platinum - Purple Galaxy Effect */
+.vip-tag-platinum {
+    background: linear-gradient(135deg, #8b5cf6, #a78bfa, #c4b5fd) !important;
+    color: white !important;
+    border: 2px solid #a78bfa !important;
+    animation: platinumGlow 2s ease-in-out infinite;
+    position: relative;
+    overflow: hidden;
+}
+
+.vip-tag-platinum::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+    animation: platinumRotate 3s linear infinite;
+}
+
+@keyframes platinumGlow {
+    0%, 100% {
+        box-shadow: 0 0 10px rgba(139, 92, 246, 0.5), 0 0 20px rgba(167, 139, 250, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(139, 92, 246, 0.8), 0 0 40px rgba(167, 139, 250, 0.5);
+    }
+}
+
+@keyframes platinumRotate {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* VIP EXTREME - Red Fire Effect */
+.vip-tag-extreme {
+    background: linear-gradient(135deg, #ff0000, #ff4444, #ff6666) !important;
+    color: white !important;
+    border: 2px solid #ff4444 !important;
+    animation: extremeGlow 1.5s ease-in-out infinite;
+    position: relative;
+    overflow: hidden;
+}
+
+.vip-tag-extreme::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.4) 0%, transparent 70%);
+    animation: extremePulse 2s ease-in-out infinite;
+}
+
+@keyframes extremeGlow {
+    0%, 100% {
+        box-shadow: 0 0 15px rgba(255, 0, 0, 0.6), 0 0 30px rgba(255, 68, 68, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 25px rgba(255, 0, 0, 0.9), 0 0 50px rgba(255, 68, 68, 0.6);
+    }
+}
+
+@keyframes extremePulse {
+    0%, 100% {
+        opacity: 0.5;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.1);
+    }
+}
+
+/* VIP Gold - Golden Shine Effect */
+.vip-tag-gold {
+    background: linear-gradient(135deg, #f59e0b, #fbbf24, #fcd34d) !important;
+    color: white !important;
+    border: 2px solid #fbbf24 !important;
+    animation: goldShine 1.5s ease-in-out infinite;
+    position: relative;
+    overflow: hidden;
+}
+
+.vip-tag-gold::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+    animation: goldSweep 2s ease-in-out infinite;
+}
+
+@keyframes goldShine {
+    0%, 100% {
+        box-shadow: 0 0 10px rgba(245, 158, 11, 0.5), 0 0 20px rgba(251, 191, 36, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(245, 158, 11, 0.8), 0 0 40px rgba(251, 191, 36, 0.5);
+    }
+}
+
+@keyframes goldSweep {
+    0% {
+        left: -100%;
+    }
+    50%, 100% {
+        left: 100%;
+    }
+}
+
+/* VIP Diamond - Cyan Ice Effect */
+.vip-tag-diamond {
+    background: linear-gradient(135deg, #06b6d4, #22d3ee, #67e8f9) !important;
+    color: white !important;
+    border: 2px solid #22d3ee !important;
+    animation: diamondSparkle 1s ease-in-out infinite;
+    position: relative;
+    overflow: hidden;
+}
+
+.vip-tag-diamond::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 2px,
+        rgba(255,255,255,0.1) 2px,
+        rgba(255,255,255,0.1) 4px
+    );
+    animation: diamondPattern 2s linear infinite;
+}
+
+@keyframes diamondSparkle {
+    0%, 100% {
+        box-shadow: 0 0 10px rgba(6, 182, 212, 0.5), 0 0 20px rgba(34, 211, 238, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 25px rgba(6, 182, 212, 0.8), 0 0 50px rgba(34, 211, 238, 0.5);
+    }
+}
+
+@keyframes diamondPattern {
+    from {
+        background-position: 0 0;
+    }
+    to {
+        background-position: 10px 10px;
+    }
+}
+
+/* ===== Modern Comment System ===== */
+.comment-item {
+    animation: fadeInUp 0.3s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.comment-card {
+    background: rgba(31, 41, 55, 0.6);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(139, 92, 246, 0.15);
+    border-radius: 12px;
+    padding: 16px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.comment-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.5), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.comment-card:hover {
+    background: rgba(31, 41, 55, 0.8);
+    border-color: rgba(139, 92, 246, 0.3);
+    transform: translateX(5px);
+}
+
+.comment-card:hover::before {
+    opacity: 1;
+}
+
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.comment-content {
+    margin-bottom: 12px;
+    line-height: 1.6;
+}
+
+.comment-content p {
+    color: #e5e7eb;
+    word-wrap: break-word;
+}
+
+.comment-footer {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(139, 92, 246, 0.1);
+}
+
+.comment-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: transparent;
+    border: none;
+    color: #9ca3af;
+    font-size: 13px;
+    cursor: pointer;
+    padding: 6px 12px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.comment-action-btn:hover {
+    background: rgba(139, 92, 246, 0.1);
+    color: #8b5cf6;
+}
+
+.comment-action-btn.liked {
+    color: #ef4444;
+}
+
+.comment-action-btn.liked:hover {
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.comment-actions {
+    position: relative;
+}
+
+.comment-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: rgba(17, 24, 39, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 8px;
+    padding: 8px 0;
+    min-width: 120px;
+    z-index: 10;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.comment-menu button {
+    display: block;
+    width: 100%;
+    padding: 8px 16px;
+    background: transparent;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.comment-menu button:hover {
+    background: rgba(139, 92, 246, 0.1);
+}
+
+.replies-container {
+    margin-left: 24px;
+    padding-left: 24px;
+    border-left: 2px solid rgba(139, 92, 246, 0.2);
+    margin-top: 16px;
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.reply-form {
+    background: rgba(139, 92, 246, 0.05);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 12px;
+    padding: 16px;
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.comment-form {
+    background: rgba(139, 92, 246, 0.05);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 12px;
+    padding: 16px;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.comment-form textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+
+/* Comment Avatar Glow Effect */
+.comment-card .avatar {
+    transition: all 0.3s ease;
+    box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+}
+
+.comment-card:hover .avatar {
+    box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.5), 0 0 20px rgba(139, 92, 246, 0.3);
+}
+
+/* Comment Tag Badges */
+.comment-card .vip-tag-gold,
+.comment-card .vip-tag-platinum,
+.comment-card .vip-tag-diamond,
+.comment-card .vip-tag-extreme {
+    animation: badgePulse 2s ease-in-out infinite;
+}
+
+@keyframes badgePulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+/* Comment Date Badge */
+.comment-header .text-gray-400 {
+    background: rgba(139, 92, 246, 0.1);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+}
+
+/* Empty Comments State */
+#comments-container:empty::before {
+    content: 'Seja o primeiro a comentar!';
+    display: block;
+    text-align: center;
+    color: #6b7280;
+    padding: 40px 20px;
+    font-size: 14px;
+}
+
+/* Comment Sort Dropdown */
+select {
+    background: rgba(31, 41, 55, 0.8) !important;
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+}
+
+select:hover {
+    background: rgba(31, 41, 55, 0.8) !important;
+    border-color: rgba(139, 92, 246, 0.4);
+}
+
+select:focus {
+    background: rgba(31, 41, 55, 0.8) !important;
+    outline: none;
+    border-color: #8b5cf6;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+}
+
+/* Ensure select arrow color doesn't change on hover */
+select option {
+    background: #1f2937;
+    color: white;
+}
+
+/* Responsive Comment Styles */
+@media (max-width: 768px) {
+    .comment-card {
+        padding: 12px;
+    }
+
+    .comment-header {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .comment-actions {
+        position: static;
+    }
+
+    .comment-menu {
+        right: 0;
+        top: 100%;
+    }
+
+    .replies-container {
+        margin-left: 12px;
+        padding-left: 12px;
+    }
+
+    .comment-footer {
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+}
+
+/* Inline Comment Editing */
+.edit-textarea {
+    width: 100%;
+    background: rgba(17, 24, 39, 0.8);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 8px;
+    padding: 12px;
+    color: #e5e7eb;
+    font-size: 14px;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 80px;
+    transition: all 0.2s ease;
+}
+
+.edit-textarea:focus {
+    outline: none;
+    border-color: #8b5cf6;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+}
+
+.edit-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(139, 92, 246, 0.1);
+}
+
+
+
+.edit-actions button {
+    padding: 6px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+}
+
+.edit-actions .btn-primary {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    border: none;
+    color: white;
+}
+
+.edit-actions .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+/* Edit Badge */
+.edit-badge {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(139, 92, 246, 0.1);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    color: #8b5cf6;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-top: 8px;
+    font-weight: 500;
+    animation: badgeFadeIn 0.3s ease;
+}
+
+.edit-badge-header {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(139, 92, 246, 0.15);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    color: #8b5cf6;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-weight: 500;
+    animation: badgeFadeIn 0.3s ease;
+}
+
+@keyframes badgeFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+    to {
+        background-position: 20px 20px;
+    }
+}
+
+/* ===== Hacker Effect on Username ===== */
+.hacker-name-effect-container {
+    position: relative;
+    display: inline-block;
+}
+
+.hacker-glow {
+    position: relative;
+    text-shadow: 0 0 10px currentColor;
+}
+
+.hacker-glow::before,
+.hacker-glow::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 150%;
+    height: 150%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: -1;
+}
+
+.hacker-glow::before {
+    background: radial-gradient(circle, rgba(0, 255, 0, 0.3) 0%, transparent 70%);
+    animation: hackerPulse 2s ease-in-out infinite;
+}
+
+.hacker-glow::after {
+    background: radial-gradient(circle, rgba(0, 255, 0, 0.1) 0%, transparent 50%);
+    animation: hackerRing 3s linear infinite;
+}
+
+@keyframes hackerPulse {
+    0%, 100% {
+        opacity: 0.5;
+        transform: translate(-50%, -50%) scale(1);
+    }
+    50% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.2);
+    }
+}
+
+@keyframes hackerRing {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.8);
+    }
+    50% {
+        opacity: 0.8;
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(1.5);
+    }
+}
+
+/* Hacker Matrix Rain Effect around username */
+.hacker-matrix-container {
+    position: absolute;
+    top: -20px;
+    left: -20px;
+    right: -20px;
+    bottom: -20px;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: -1;
+}
+
+.hacker-matrix-char {
+    position: absolute;
+    color: #00ff00;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    opacity: 0;
+    animation: matrixFall 3s linear infinite;
+    text-shadow: 0 0 5px #00ff00;
+}
+
+@keyframes matrixFall {
+    0% {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    10% {
+        opacity: 1;
+    }
+    90% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(40px);
+    }
+}
+
+/* Hacker Glitch Effect */
+.hacker-glitch {
+    animation: hackerGlitch 0.3s ease-in-out infinite;
+}
+
+@keyframes hackerGlitch {
+    0%, 100% {
+        text-shadow: 2px 0 #ff0000, -2px 0 #00ff00;
+    }
+    25% {
+        text-shadow: -2px 0 #ff0000, 2px 0 #00ff00;
+    }
+    50% {
+        text-shadow: 2px 0 #00ff00, -2px 0 #ff0000;
+    }
+    75% {
+        text-shadow: -2px 0 #00ff00, 2px 0 #ff0000;
+    }
+}
+
+/* Selected VIP Tag Indicator */
+.selected-vip-tag {
+    transform: scale(1.1);
+    box-shadow: 0 0 20px currentColor, 0 0 40px currentColor;
+    z-index: 10;
+}
+
+/* ===== VIP Username Particle Effect ===== */
+.vip-username-container {
+    position: relative;
+    display: inline-block;
+}
+
+.vip-username-particles {
+    position: absolute;
+    top: -15px;
+    left: -15px;
+    right: -15px;
+    bottom: -15px;
+    pointer-events: none;
+    overflow: visible;
+}
+
+.vip-particle {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    animation: vipParticleFloat 3s ease-in-out infinite;
+}
+
+/* ===== Username Particle Effect (Profile & Comments) ===== */
+.username-glow-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.username-particles {
+    position: absolute;
+    top: -6px;
+    left: -6px;
+    right: -6px;
+    bottom: -6px;
+    pointer-events: none;
+    overflow: visible;
+}
+
+.username-particle {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: rgba(139, 92, 246, 0.6);
+    box-shadow: 0 0 8px rgba(139, 92, 246, 0.8);
+    pointer-events: none;
+    animation: usernameParticleFloat 4s ease-in-out infinite;
+}
+
+/* VIP Particle Colors */
+.username-particle.vip-gold {
+    background: rgba(255, 215, 0, 0.8);
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.9);
+}
+
+.username-particle.vip-platinum {
+    background: rgba(139, 92, 246, 0.8);
+    box-shadow: 0 0 10px rgba(139, 92, 246, 0.9);
+}
+
+.username-particle.vip-diamond {
+    background: rgba(6, 182, 212, 0.8);
+    box-shadow: 0 0 10px rgba(6, 182, 212, 0.9);
+}
+
+.username-particle.vip-extreme {
+    background: rgba(255, 0, 0, 0.8);
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.9);
+}
+
+@keyframes usernameParticleFloat {
+    0%, 100% {
+        transform: translateY(0) scale(1);
+        opacity: 0.6;
+    }
+    50% {
+        transform: translateY(-8px) scale(1.2);
+        opacity: 1;
+    }
+}
+
+/* ===== Bio Glow Effect ===== */
+.profile-bio {
+    position: relative;
+}
+
+/* ===== Carousel Styles ===== */
+.carousel-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.carousel-slide {
+    position: absolute;
+    inset: 0;
+    transition: opacity 0.5s ease-in-out;
+}
+
+.carousel-nav-btn {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.carousel-container:hover .carousel-nav-btn {
+    opacity: 1;
+}
+
+.carousel-indicator {
+    transition: background-color 0.3s ease;
+}
+
+.carousel-indicator:hover {
+    background-color: white !important;
+}
+
+
+
+@keyframes vipParticleFloat {
+    0%, 100% {
+        transform: translateY(0) translateX(0) scale(1);
+        opacity: 0.8;
+    }
+    25% {
+        transform: translateY(-10px) translateX(5px) scale(1.2);
+        opacity: 1;
+    }
+    50% {
+        transform: translateY(-5px) translateX(-5px) scale(1);
+        opacity: 0.9;
+    }
+    75% {
+        transform: translateY(-15px) translateX(3px) scale(1.1);
+        opacity: 0.7;
+    }
+}
+
+/* VIP Username Glow Effect */
+.vip-username-glow {
+    position: relative;
+    font-weight: bold;
+    animation: vipGlowPulse 2s ease-in-out infinite;
+}
+
+.vip-username-glow::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 200%;
+    height: 200%;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(circle, currentColor 0%, transparent 70%);
+    opacity: 0.3;
+    animation: vipGlowRotate 4s linear infinite;
+    pointer-events: none;
+    z-index: -1;
+}
+
+@keyframes vipGlowPulse {
+    0%, 100% {
+        text-shadow: 0 0 10px currentColor, 0 0 20px currentColor, 0 0 30px currentColor;
+    }
+    50% {
+        text-shadow: 0 0 15px currentColor, 0 0 30px currentColor, 0 0 45px currentColor;
+    }
+}
+
+@keyframes vipGlowRotate {
+    from {
+        transform: translate(-50%, -50%) rotate(0deg);
+    }
+    to {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+
+/* Particle colors for different VIP types */
+.vip-particle-gold {
+    background: radial-gradient(circle, #ffd700, #ff8c00);
+    box-shadow: 0 0 6px #ffd700, 0 0 12px #ff8c00;
+}
+
+.vip-particle-platinum {
+    background: radial-gradient(circle, #8b5cf6, #a78bfa);
+    box-shadow: 0 0 6px #8b5cf6, 0 0 12px #a78bfa;
+}
+
+.vip-particle-diamond {
+    background: radial-gradient(circle, #06b6d4, #22d3ee);
+    box-shadow: 0 0 6px #06b6d4, 0 0 12px #22d3ee;
+}
+
+.vip-particle-extreme {
+    background: radial-gradient(circle, #ff0000, #ff4444);
+    box-shadow: 0 0 6px #ff0000, 0 0 12px #ff4444;
+}
+
+/* Username text color based on VIP type */
+.vip-username-gold {
+    color: #ffd700 !important;
+    text-shadow: 0 0 10px #ffd700, 0 0 20px #ff8c00;
+}
+
+.vip-username-platinum {
+    color: #a78bfa !important;
+    text-shadow: 0 0 10px #8b5cf6, 0 0 20px #a78bfa;
+}
+
+.vip-username-diamond {
+    color: #22d3ee !important;
+    text-shadow: 0 0 10px #06b6d4, 0 0 20px #22d3ee;
+}
+
+.vip-username-extreme {
+    color: #ff0000 !important;
+    text-shadow: 0 0 10px #ff0000, 0 0 20px #ff4444;
+}
