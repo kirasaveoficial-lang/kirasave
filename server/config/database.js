@@ -9,13 +9,15 @@ let pool;
 
 if (isProduction && process.env.DATABASE_URL) {
   // Use PostgreSQL in production (Render)
-  const pgPool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: {
-      rejectUnauthorized: false
-    }
-  });
-  console.log('Connected to PostgreSQL (Render)');
+  console.log('DATABASE_URL found:', process.env.DATABASE_URL.substring(0, 20) + '...');
+  try {
+    const pgPool = new Pool({
+      connectionString: process.env.DATABASE_URL,
+      ssl: {
+        rejectUnauthorized: false
+      }
+    });
+    console.log('Connected to PostgreSQL (Render)');
 
   // Create wrapper that mimics SQLite API
   pool = {
@@ -74,6 +76,27 @@ if (isProduction && process.env.DATABASE_URL) {
         });
     }
   };
+  } catch (err) {
+    console.error('Error creating PostgreSQL pool:', err);
+    console.error('DATABASE_URL:', process.env.DATABASE_URL);
+    // Fallback to SQLite if PostgreSQL fails
+    const dbPath = path.join(__dirname, '../../kira-save.db');
+    const db = new sqlite3.Database(dbPath, (err) => {
+      if (err) {
+        console.error('Error opening SQLite database:', err.message);
+      } else {
+        console.log('Connected to SQLite database (fallback)');
+        initializeSQLiteTables(db);
+      }
+    });
+
+    pool = {
+      query: db.all.bind(db),
+      run: db.run.bind(db),
+      get: db.get.bind(db),
+      all: db.all.bind(db)
+    };
+  }
 } else {
   // Use SQLite for development
   const dbPath = path.join(__dirname, '../../kira-save.db');
