@@ -260,6 +260,9 @@ const wrapper = {
       let paramIndex = 1;
       pgSql = pgSql.replace(/\?/g, () => `$${paramIndex++}`);
 
+      console.log('Executing SQL:', pgSql);
+      console.log('With params:', params);
+
       const result = await db.raw(pgSql, params);
       const rows = result[0] || [];
 
@@ -268,6 +271,7 @@ const wrapper = {
       }
       return rows;
     } catch (err) {
+      console.error('Database error:', err);
       if (callback) {
         callback(err);
       }
