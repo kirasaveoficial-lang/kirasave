@@ -414,9 +414,16 @@ const authController = {
 
   heartbeat: (req, res) => {
     // Update last_seen timestamp to keep user online
+    const userId = req.user ? req.user.id : null;
+    console.log('Heartbeat request from user:', userId);
+
+    if (!userId) {
+      return res.status(401).json({ error: 'User not authenticated' });
+    }
+
     db.run(
       'UPDATE users SET is_online = 1, last_seen = NOW() WHERE id = ?',
-      [req.user.id],
+      [userId],
       (err) => {
         if (err) {
           console.error('Error updating heartbeat:', err);
