@@ -36,7 +36,6 @@ const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 150, // limit each IP to 150 requests per windowMs
   message: { error: 'Muitas requisições, tente novamente mais tarde.' },
-  trustProxy: true, // Use the IP from the X-Forwarded-For header
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 });
