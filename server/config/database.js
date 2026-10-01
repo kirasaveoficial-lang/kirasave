@@ -1,260 +1,93 @@
-const knex = require('knex');
+const { Pool } = require('pg');
+const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
 // Use PostgreSQL in production (Render), SQLite for development
 const isProduction = process.env.NODE_ENV === 'production';
 
-const db = knex({
-  client: isProduction ? 'pg' : 'sqlite3',
-  connection: isProduction
-    ? process.env.DATABASE_URL
-    : {
-      filename: path.join(__dirname, '../../kira-save.db')
-    },
-  useNullAsDefault: true,
-  migrations: {
-    tableName: 'knex_migrations'
-  }
-});
+let pool;
 
-console.log(`Connected to ${isProduction ? 'PostgreSQL' : 'SQLite'} database`);
+if (isProduction && process.env.DATABASE_URL) {
+  // Use PostgreSQL in production (Render)
+  console.log('DATABASE_URL found:', process.env.DATABASE_URL.substring(0, 20) + '...');
+  pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+      rejectUnauthorized: false
+    }
+  });
+  console.log('Connected to PostgreSQL (Render)');
 
-// Initialize tables if they don't exist
-async function initializeTables() {
-  const exists = await db.schema.hasTable('users');
-  if (!exists) {
-    await db.schema.createTable('users', table => {
-      table.increments('id');
-      table.string('username', 255).unique().notNullable();
-      table.string('email', 255).unique().notNullable();
-      table.string('password', 255).notNullable();
-      table.string('avatar', 500).defaultTo('default-avatar.png');
-      table.text('bio');
-      table.date('birth_date');
-      table.timestamp('created_at').defaultTo(knex.fn.now());
-      table.timestamp('updated_at').defaultTo(knex.fn.now());
-      table.boolean('is_admin').defaultTo(false);
-      table.boolean('is_banned').defaultTo(false);
-      table.boolean('is_online').defaultTo(false);
-      table.timestamp('last_seen');
-      table.timestamp('username_changed_at');
-    });
+  // Initialize PostgreSQL tables
+  initializePostgreSQLTables(pool);
+} else {
+  // Use SQLite for development
+  const dbPath = path.join(__dirname, '../../kira-save.db');
+  const db = new sqlite3.Database(dbPath, (err) => {
+    if (err) {
+      console.error('Error opening SQLite database:', err.message);
+    } else {
+      console.log('Connected to SQLite database at:', dbPath);
+      initializeSQLiteTables(db);
+    }
+  });
 
-    await db.schema.createTable('games', table => {
-      table.increments('id');
-      table.string('name', 255).unique().notNullable();
-      table.string('cover_image', 500);
-      table.text('description');
-      table.string('platform', 100);
-      table.timestamp('created_at').defaultTo(knex.fn.now());
-    });
-
-    await db.schema.createTable('saves', table => {
-      table.increments('id');
-      table.string('title', 255).notNullable();
-      table.text('description');
-      table.string('file_path', 500).notNullable();
-      table.string('thumbnail', 500);
-      table.integer('user_id').unsigned().notNullable().references('id').in('users');
-      table.integer('game_id').unsigned().notNullable().references('id').in('games');
-      table.string('platform', 100).notNullable();
-      table.string('category', 100);
-      table.integer('download_count').defaultTo(0);
-      table.integer('view_count').defaultTo(0);
-      table.decimal('rating_avg', 3, 2).defaultTo(0.00);
-      table.integer('rating_count').defaultTo(0);
-      table.string('status', 50).defaultTo('pending');
-      table.timestamp('created_at').defaultTo(knex.fn.now());
-      table.timestamp('updated_at').defaultTo(knex.fn.now());
-    });
-
-    await db.schema.createTable('ratings', table => {
-      table.increments('id');
-      table.integer('user_id').unsigned().notNullable().references('id').in('users');
-      table.integer('save_id').unsigned().notNullable().references('id').in('saves');
-      table.integer('rating').notNullable();
-      table.timestamp('created_at').defaultTo(knex.fn.now());
-      table.unique(['user_id', 'save_id']);
-    });
-
-    await db.schema.createTable('comments', table => {
-      table.increments('id');
-      table.text('content').notNullable();
-      table.integer('user_id').unsigned().notNullable().references('id').in('users');
-      table.integer('save_id').unsigned().notNullable().references('id').in('saves');
-      table.integer('parent_id').unsigned().references('id').in('comments');
-      table.timestamp('created_at').defaultTo(knex.fn.now());
-      table.timestamp('updated_at').defaultTo(knex.fn.now());
-    });
-
-    await db.schema.createTable('comment_likes', table => {
-      table.increments('id');
-      table.integer('user_id').unsigned().notNullable().references('id').in('users');
-      table.integer('comment_id').unsigned().notNullable().references('id').in('comments');
-      table.timestamp('created_at').defaultTo(knex.fn.now());
-      table.unique(['user_id', 'comment_id']);
-    });
-
-    await db.schema.createTable('favorites', table => {
-      table.increments('id');
-      table.integer('user_id').unsigned().notNullable().references('id').in('users');
-      table.integer('save_id').unsigned().notNullable().references('id').in('saves');
-      table.timestamp('created_at').defaultTo(knex.fn.now());
-      table.unique(['user_id', 'save_id']);
-    });
-
-    await db.schema.createTable('downloads', table => {
-      table.increments('id');
-      table.integer('user_id').unsigned().references('id').in('users');
-      table.integer('save_id').unsigned().notNullable().references('id').in('saves');
-      table.string('ip_address', 100);
-      table.timestamp('created_at').defaultTo(knex.fn.now());
-    });
-
-    await db.schema.createTable('notifications', table => {
-      table.increments('id');
-      table.integer('user_id').unsigned().notNullable().references('id').in('users');
-      table.string('type', 50).notNullable();
-      table.string('title', 255).notNullable();
-      table.text('message');
-      table.string('link', 500);
-      table.boolean('read_status').defaultTo(false);
-      table.timestamp('created_at').defaultTo(knex.fn.now());
-    });
-
-    await db.schema.createTable('activity_logs', table => {
-      table.increments('id');
-      table.integer('user_id').unsigned().references('id').in('users');
-      table.string('action', 100).notNullable();
-      table.string('target_type', 50);
-      table.integer('target_id');
-      table.text('description');
-      table.timestamp('created_at').defaultTo(knex.fn.now());
-    });
-
-    await db.schema.createTable('tags', table => {
-      table.increments('id');
-      table.string('name', 100).unique().notNullable();
-      table.string('color', 20);
-      table.string('icon', 50);
-      table.text('description');
-      table.timestamp('created_at').defaultTo(knex.fn.now());
-    });
-
-    await db.schema.createTable('user_tags', table => {
-      table.increments('id');
-      table.integer('user_id').unsigned().notNullable().references('id').in('users');
-      table.integer('tag_id').unsigned().notNullable().references('id').in('tags');
-      table.timestamp('assigned_at').defaultTo(knex.fn.now());
-      table.unique(['user_id', 'tag_id']);
-    });
-
-    await db.schema.createTable('reports', table => {
-      table.increments('id');
-      table.integer('user_id').unsigned().notNullable().references('id').in('users');
-      table.integer('save_id').unsigned().notNullable().references('id').in('saves');
-      table.text('reason').notNullable();
-      table.string('status', 50).defaultTo('pending');
-      table.timestamp('created_at').defaultTo(knex.fn.now());
-    });
-
-    await db.schema.createTable('warnings', table => {
-      table.increments('id');
-      table.integer('user_id').unsigned().notNullable().references('id').in('users');
-      table.integer('admin_id').unsigned().notNullable().references('id').in('users');
-      table.text('reason').notNullable();
-      table.timestamp('created_at').defaultTo(knex.fn.now());
-    });
-
-    await db.schema.createTable('username_changes', table => {
-      table.increments('id');
-      table.integer('user_id').unsigned().notNullable().references('id').in('users');
-      table.string('old_value', 255);
-      table.string('new_value', 255);
-      table.timestamp('created_at').defaultTo(knex.fn.now());
-    });
-
-    await db.schema.createTable('bans', table => {
-      table.increments('id');
-      table.integer('user_id').unsigned().notNullable().references('id').in('users');
-      table.integer('banned_by').unsigned().notNullable().references('id').in('users');
-      table.text('reason').notNullable();
-      table.string('ip_address', 100);
-      table.string('country', 100);
-      table.string('city', 100);
-      table.string('region', 100);
-      table.string('isp', 100);
-      table.decimal('latitude', 10, 8);
-      table.decimal('longitude', 11, 8);
-      table.timestamp('created_at').defaultTo(knex.fn.now());
-    });
-
-    await db.schema.createTable('save_images', table => {
-      table.increments('id');
-      table.integer('save_id').unsigned().notNullable().references('id').in('saves');
-      table.string('image_path', 500).notNullable();
-      table.boolean('is_cover').defaultTo(false);
-      table.timestamp('created_at').defaultTo(knex.fn.now());
-    });
-
-    console.log('Database tables initialized');
-  }
+  pool = {
+    query: db.all.bind(db),
+    run: db.run.bind(db),
+    get: db.get.bind(db),
+    all: db.all.bind(db)
+  };
 }
 
-initializeTables();
-
-// Wrapper to make knex compatible with SQLite-style API
-const wrapper = {
-  run: async (sql, params, callback) => {
-    try {
+// Create wrapper for PostgreSQL that mimics SQLite API
+if (isProduction && process.env.DATABASE_URL) {
+  pool = {
+    run: (sql, params, callback) => {
       // Convert SQLite ? to PostgreSQL $1, $2, etc.
       let pgSql = sql;
       let paramIndex = 1;
       pgSql = pgSql.replace(/\?/g, () => `$${paramIndex++}`);
 
-      // Handle INSERT OR IGNORE -> ON CONFLICT DO NOTHING
+      // Handle INSERT OR IGNORE -> INSERT ... ON CONFLICT DO NOTHING
       pgSql = pgSql.replace(/INSERT OR IGNORE/gi, 'INSERT');
 
-      const result = await db.raw(pgSql, params);
-      const lastId = result[0] ? result[0].insertId || result[0].id : null;
-      const changes = result.rowCount || result.length;
+      pool.query(pgSql, params, (err, result) => {
+        if (err) {
+          if (callback) callback(err);
+          return;
+        }
 
-      if (callback) {
-        callback(null, { lastID: lastId, changes: changes });
-      }
-      return { lastID: lastId, changes: changes };
-    } catch (err) {
-      if (callback) {
-        callback(err);
-      }
-      throw err;
-    }
-  },
+        const lastId = result.rows[0] ? result.rows[0].id : null;
+        const changes = result.rowCount;
 
-  get: async (sql, params, callback) => {
-    try {
+        if (callback) {
+          callback(null, { lastID: lastId, changes: changes });
+        }
+      });
+    },
+
+    get: (sql, params, callback) => {
       // Convert SQLite ? to PostgreSQL $1, $2, etc.
       let pgSql = sql;
       let paramIndex = 1;
       pgSql = pgSql.replace(/\?/g, () => `$${paramIndex++}`);
 
-      const result = await db.raw(pgSql, params);
-      const row = result[0] ? result[0][0] : null;
+      pool.query(pgSql, params, (err, result) => {
+        if (err) {
+          if (callback) callback(err);
+          return;
+        }
 
-      if (callback) {
-        callback(null, row);
-      }
-      return row;
-    } catch (err) {
-      if (callback) {
-        callback(err);
-      }
-      throw err;
-    }
-  },
+        const row = result.rows[0] || null;
 
-  all: async (sql, params, callback) => {
-    try {
+        if (callback) {
+          callback(null, row);
+        }
+      });
+    },
+
+    all: (sql, params, callback) => {
       // Convert SQLite ? to PostgreSQL $1, $2, etc.
       let pgSql = sql;
       let paramIndex = 1;
@@ -263,25 +96,511 @@ const wrapper = {
       console.log('Executing SQL:', pgSql);
       console.log('With params:', params);
 
-      const result = await db.raw(pgSql, params);
-      const rows = result[0] || [];
+      pool.query(pgSql, params, (err, result) => {
+        if (err) {
+          console.error('Database error:', err);
+          if (callback) callback(err);
+          return;
+        }
 
-      if (callback) {
-        callback(null, rows);
-      }
-      return rows;
-    } catch (err) {
-      console.error('Database error:', err);
-      if (callback) {
-        callback(err);
-      }
-      throw err;
+        const rows = result.rows || [];
+
+        if (callback) {
+          callback(null, rows);
+        }
+      });
+    },
+
+    query: (sql, params, callback) => {
+      pool.all(sql, params, callback);
     }
-  },
+  };
+}
 
-  query: async (sql, params, callback) => {
-    return wrapper.all(sql, params, callback);
+function initializeSQLiteTables(db) {
+  db.serialize(() => {
+    // Users table
+    db.run(`
+      CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT UNIQUE NOT NULL,
+        email TEXT UNIQUE NOT NULL,
+        password TEXT NOT NULL,
+        avatar TEXT DEFAULT 'default-avatar.png',
+        bio TEXT,
+        birth_date TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        is_admin INTEGER DEFAULT 0,
+        is_banned INTEGER DEFAULT 0,
+        is_online INTEGER DEFAULT 0,
+        last_seen DATETIME,
+        username_changed_at DATETIME
+      )
+    `);
+
+    // Games table
+    db.run(`
+      CREATE TABLE IF NOT EXISTS games (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT UNIQUE NOT NULL,
+        cover_image TEXT,
+        description TEXT,
+        platform TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Saves table
+    db.run(`
+      CREATE TABLE IF NOT EXISTS saves (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        description TEXT,
+        file_path TEXT NOT NULL,
+        thumbnail TEXT,
+        user_id INTEGER NOT NULL,
+        game_id INTEGER NOT NULL,
+        platform TEXT NOT NULL,
+        category TEXT,
+        download_count INTEGER DEFAULT 0,
+        view_count INTEGER DEFAULT 0,
+        rating_avg REAL DEFAULT 0,
+        rating_count INTEGER DEFAULT 0,
+        status TEXT DEFAULT 'pending',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        FOREIGN KEY (game_id) REFERENCES games(id)
+      )
+    `);
+
+    // Ratings table
+    db.run(`
+      CREATE TABLE IF NOT EXISTS ratings (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        save_id INTEGER NOT NULL,
+        rating INTEGER NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        FOREIGN KEY (save_id) REFERENCES saves(id),
+        UNIQUE(user_id, save_id)
+      )
+    `);
+
+    // Comments table
+    db.run(`
+      CREATE TABLE IF NOT EXISTS comments (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        content TEXT NOT NULL,
+        user_id INTEGER NOT NULL,
+        save_id INTEGER NOT NULL,
+        parent_id INTEGER,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        FOREIGN KEY (save_id) REFERENCES saves(id),
+        FOREIGN KEY (parent_id) REFERENCES comments(id) ON DELETE CASCADE
+      )
+    `);
+
+    // Comment likes
+    db.run(`
+      CREATE TABLE IF NOT EXISTS comment_likes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        comment_id INTEGER NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        FOREIGN KEY (comment_id) REFERENCES comments(id) ON DELETE CASCADE,
+        UNIQUE(user_id, comment_id)
+      )
+    `);
+
+    // Favorites table
+    db.run(`
+      CREATE TABLE IF NOT EXISTS favorites (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        save_id INTEGER NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        FOREIGN KEY (save_id) REFERENCES saves(id) ON DELETE CASCADE,
+        UNIQUE(user_id, save_id)
+      )
+    `);
+
+    // Downloads table
+    db.run(`
+      CREATE TABLE IF NOT EXISTS downloads (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        save_id INTEGER NOT NULL,
+        ip_address TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        FOREIGN KEY (save_id) REFERENCES saves(id)
+      )
+    `);
+
+    // Notifications table
+    db.run(`
+      CREATE TABLE IF NOT EXISTS notifications (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        type TEXT NOT NULL,
+        title TEXT NOT NULL,
+        message TEXT,
+        link TEXT,
+        read INTEGER DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      )
+    `);
+
+    // Activity logs table
+    db.run(`
+      CREATE TABLE IF NOT EXISTS activity_logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id,
+        action TEXT NOT NULL,
+        target_type TEXT,
+        target_id INTEGER,
+        description TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+      )
+    `);
+
+    // Tags table
+    db.run(`
+      CREATE TABLE IF NOT EXISTS tags (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT UNIQUE NOT NULL,
+        color TEXT,
+        icon TEXT,
+        description TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // User tags relationship
+    db.run(`
+      CREATE TABLE IF NOT EXISTS user_tags (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        tag_id INTEGER NOT NULL,
+        assigned_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE,
+        UNIQUE(user_id, tag_id)
+      )
+    `);
+
+    // Reports table
+    db.run(`
+      CREATE TABLE IF NOT EXISTS reports (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        save_id INTEGER NOT NULL,
+        reason TEXT NOT NULL,
+        status TEXT DEFAULT 'pending',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        FOREIGN KEY (save_id) REFERENCES saves(id)
+      )
+    `);
+
+    // Warnings table
+    db.run(`
+      CREATE TABLE IF NOT EXISTS warnings (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        admin_id INTEGER NOT NULL,
+        reason TEXT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        FOREIGN KEY (admin_id) REFERENCES users(id)
+      )
+    `);
+
+    // Username changes
+    db.run(`
+      CREATE TABLE IF NOT EXISTS username_changes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        old_value TEXT,
+        new_value TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      )
+    `);
+
+    // Bans table
+    db.run(`
+      CREATE TABLE IF NOT EXISTS bans (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        banned_by INTEGER NOT NULL,
+        reason TEXT NOT NULL,
+        ip_address TEXT,
+        country TEXT,
+        city TEXT,
+        region TEXT,
+        isp TEXT,
+        latitude REAL,
+        longitude REAL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (banned_by) REFERENCES users(id)
+      )
+    `);
+
+    // Save images table
+    db.run(`
+      CREATE TABLE IF NOT EXISTS save_images (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        save_id INTEGER NOT NULL,
+        image_path TEXT NOT NULL,
+        is_cover INTEGER DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (save_id) REFERENCES saves(id) ON DELETE CASCADE
+      )
+    `);
+
+    console.log('SQLite tables initialized');
+  });
+}
+
+async function initializePostgreSQLTables(pool) {
+  try {
+    const createTables = [
+      // Users table
+      `CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        username VARCHAR(255) UNIQUE NOT NULL,
+        email VARCHAR(255) UNIQUE NOT NULL,
+        password VARCHAR(255) NOT NULL,
+        avatar VARCHAR(500) DEFAULT 'default-avatar.png',
+        bio TEXT,
+        birth_date DATE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        is_admin BOOLEAN DEFAULT FALSE,
+        is_banned BOOLEAN DEFAULT FALSE,
+        is_online BOOLEAN DEFAULT FALSE,
+        last_seen TIMESTAMP,
+        username_changed_at TIMESTAMP
+      )`,
+
+      // Games table
+      `CREATE TABLE IF NOT EXISTS games (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) UNIQUE NOT NULL,
+        cover_image VARCHAR(500),
+        description TEXT,
+        platform VARCHAR(100),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )`,
+
+      // Saves table
+      `CREATE TABLE IF NOT EXISTS saves (
+        id SERIAL PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        file_path VARCHAR(500) NOT NULL,
+        thumbnail VARCHAR(500),
+        user_id INTEGER NOT NULL,
+        game_id INTEGER NOT NULL,
+        platform VARCHAR(100) NOT NULL,
+        category VARCHAR(100),
+        download_count INTEGER DEFAULT 0,
+        view_count INTEGER DEFAULT 0,
+        rating_avg DECIMAL(3,2) DEFAULT 0.00,
+        rating_count INTEGER DEFAULT 0,
+        status VARCHAR(50) DEFAULT 'pending',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        FOREIGN KEY (game_id) REFERENCES games(id)
+      )`,
+
+      // Ratings table
+      `CREATE TABLE IF NOT EXISTS ratings (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL,
+        save_id INTEGER NOT NULL,
+        rating INTEGER NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        FOREIGN KEY (save_id) REFERENCES saves(id),
+        UNIQUE(user_id, save_id)
+      )`,
+
+      // Comments table
+      `CREATE TABLE IF NOT EXISTS comments (
+        id SERIAL PRIMARY KEY,
+        content TEXT NOT NULL,
+        user_id INTEGER NOT NULL,
+        save_id INTEGER NOT NULL,
+        parent_id INTEGER,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        FOREIGN KEY (save_id) REFERENCES saves(id),
+        FOREIGN KEY (parent_id) REFERENCES comments(id) ON DELETE CASCADE
+      )`,
+
+      // Comment likes
+      `CREATE TABLE IF NOT EXISTS comment_likes (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL,
+        comment_id INTEGER NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        FOREIGN KEY (comment_id) REFERENCES comments(id) ON DELETE CASCADE,
+        UNIQUE(user_id, comment_id)
+      )`,
+
+      // Favorites table
+      `CREATE TABLE IF NOT EXISTS favorites (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL,
+        save_id INTEGER NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        FOREIGN KEY (save_id) REFERENCES saves(id) ON DELETE CASCADE,
+        UNIQUE(user_id, save_id)
+      )`,
+
+      // Downloads table
+      `CREATE TABLE IF NOT EXISTS downloads (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER,
+        save_id INTEGER NOT NULL,
+        ip_address VARCHAR(100),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        FOREIGN KEY (save_id) REFERENCES saves(id)
+      )`,
+
+      // Notifications table
+      `CREATE TABLE IF NOT EXISTS notifications (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL,
+        type VARCHAR(50) NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        message TEXT,
+        link VARCHAR(500),
+        read_status BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      )`,
+
+      // Activity logs table
+      `CREATE TABLE IF NOT EXISTS activity_logs (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER,
+        action VARCHAR(100) NOT NULL,
+        target_type VARCHAR(50),
+        target_id INTEGER,
+        description TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+      )`,
+
+      // Tags table
+      `CREATE TABLE IF NOT EXISTS tags (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(100) UNIQUE NOT NULL,
+        color VARCHAR(20),
+        icon VARCHAR(50),
+        description TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )`,
+
+      // User tags relationship
+      `CREATE TABLE IF NOT EXISTS user_tags (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL,
+        tag_id INTEGER NOT NULL,
+        assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE,
+        UNIQUE(user_id, tag_id)
+      )`,
+
+      // Reports table
+      `CREATE TABLE IF NOT EXISTS reports (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL,
+        save_id INTEGER NOT NULL,
+        reason TEXT NOT NULL,
+        status VARCHAR(50) DEFAULT 'pending',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        FOREIGN KEY (save_id) REFERENCES saves(id)
+      )`,
+
+      // Warnings table
+      `CREATE TABLE IF NOT EXISTS warnings (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL,
+        admin_id INTEGER NOT NULL,
+        reason TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        FOREIGN KEY (admin_id) REFERENCES users(id)
+      )`,
+
+      // Username changes
+      `CREATE TABLE IF NOT EXISTS username_changes (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL,
+        old_value VARCHAR(255),
+        new_value VARCHAR(255),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      )`,
+
+      // Bans table
+      `CREATE TABLE IF NOT EXISTS bans (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL,
+        banned_by INTEGER NOT NULL,
+        reason TEXT NOT NULL,
+        ip_address VARCHAR(100),
+        country VARCHAR(100),
+        city VARCHAR(100),
+        region VARCHAR(100),
+        isp VARCHAR(100),
+        latitude DECIMAL(10,8),
+        longitude DECIMAL(11,8),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (banned_by) REFERENCES users(id)
+      )`,
+
+      // Save images table
+      `CREATE TABLE IF NOT EXISTS save_images (
+        id SERIAL PRIMARY KEY,
+        save_id INTEGER NOT NULL,
+        image_path VARCHAR(500) NOT NULL,
+        is_cover BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (save_id) REFERENCES saves(id) ON DELETE CASCADE
+      )`
+    ];
+
+    for (const sql of createTables) {
+      await pool.query(sql);
+    }
+
+    console.log('PostgreSQL tables initialized successfully');
+  } catch (error) {
+    console.error('Error initializing PostgreSQL tables:', error);
   }
-};
+}
 
-module.exports = wrapper;
+module.exports = pool;
