@@ -1772,7 +1772,7 @@ function renderSaveCards(saves, containerId) {
         <div class="save-card p-4 rounded-lg cursor-pointer" onclick="window.location.href='/saves/${save.id}'">
             <!-- Thumbnail -->
             <div class="w-full h-32 rounded-lg overflow-hidden mb-3 bg-gray-800">
-                <img src="${save.thumbnail || save.game_cover || '/images/default-game.png'}" alt="${save.title}" class="w-full h-full object-cover" onerror="this.src='${save.game_cover || '/images/default-game.png'}'">
+                <img src="${save.thumbnail || save.game_cover || 'https://via.placeholder.com/300x200/8b5cf6/ffffff?text=No+Image'}" alt="${save.title}" class="w-full h-full object-cover">
             </div>
 
             <!-- Tags -->
@@ -1842,7 +1842,7 @@ function renderProfileSaveCards(saves, containerId, isOwnProfile = false) {
                      style="animation: fadeInUp 0.3s ease-out ${index * 0.05}s both;">
                     <!-- Thumbnail -->
                     <div class="relative aspect-square overflow-hidden">
-                        <img src="${save.thumbnail || save.game_cover || '/images/default-game.png'}" 
+                        <img src="${save.thumbnail || save.game_cover || 'https://via.placeholder.com/300x200/8b5cf6/ffffff?text=No+Image'}" 
                              alt="${save.title}" 
                              class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110">
                         <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent opacity-70"></div>
@@ -1914,7 +1914,7 @@ function renderGameCards(games, containerId) {
     container.innerHTML = games.map(game => `
         <div class="glass-card p-3 text-center cursor-pointer hover:border-purple-500" onclick="filterByGame(${game.id})">
             <div class="aspect-square overflow-hidden rounded-lg mb-2">
-                <img src="${game.cover_image || '/images/default-game.png'}" alt="${game.name}" class="w-full h-full object-cover">
+                <img src="${game.cover_image || 'https://via.placeholder.com/300x200/8b5cf6/ffffff?text=No+Image'}" alt="${game.name}" class="w-full h-full object-cover">
             </div>
             <h3 class="font-semibold text-xs truncate">${game.name}</h3>
         </div>
@@ -1965,7 +1965,7 @@ function renderSaveDetails(save) {
                         </div>
                         ` : `
                         <div class="w-full h-full">
-                            <img src="${save.thumbnail ? '/' + save.thumbnail : save.game_cover || '/images/default-game.png'}" alt="${save.title}" class="w-full h-full object-cover">
+                            <img src="${save.thumbnail ? '/' + save.thumbnail : save.game_cover || 'https://via.placeholder.com/300x200/8b5cf6/ffffff?text=No+Image'}" alt="${save.title}" class="w-full h-full object-cover">
                         </div>
                         `}
                         ${state.user && state.user.id === save.user_id ? `
