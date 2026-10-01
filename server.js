@@ -16,8 +16,8 @@ const db = require('./server/config/database');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Trust proxy for Render (fixes rate limiter warning)
-app.set('trust proxy', true);
+// Trust proxy for Render (specific IPs only, not permissive)
+app.set('trust proxy', 1);
 
 // Security middleware
 app.use(helmet({
@@ -32,6 +32,10 @@ const limiter = rateLimit({
   message: { error: 'Muitas requisições, tente novamente mais tarde.' },
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  skip: (req) => {
+    // Skip rate limiting for trusted proxies in production
+    return process.env.NODE_ENV === 'production' && req.ip === '127.0.0.1';
+  }
 });
 app.use('/api/', limiter);
 

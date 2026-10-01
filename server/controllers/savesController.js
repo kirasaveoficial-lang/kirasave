@@ -50,9 +50,6 @@ const savesController = {
       LIMIT ? OFFSET ?
     `;
 
-    console.log('Query:', query);
-    console.log('Params:', [...params, limit, offset]);
-
     db.all(query, [...params, limit, offset], (err, saves) => {
       if (err) {
         console.error('Database error:', err);
