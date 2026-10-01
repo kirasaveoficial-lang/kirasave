@@ -30,6 +30,15 @@ if (isProduction && process.env.DATABASE_URL) {
       let paramIndex = 1;
       pgSql = pgSql.replace(/\?/g, () => `$${paramIndex++}`);
 
+      // Convert double quotes to single quotes for string literals
+      pgSql = pgSql.replace(/"([^"]+)"/g, (match, content) => {
+        // If it's a keyword like "approved", convert to single quotes
+        if (/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(content)) {
+          return `'${content}'`;
+        }
+        return match;
+      });
+
       // Handle INSERT OR IGNORE -> INSERT ... ON CONFLICT DO NOTHING
       pgSql = pgSql.replace(/INSERT OR IGNORE/gi, 'INSERT');
 
@@ -63,6 +72,14 @@ if (isProduction && process.env.DATABASE_URL) {
       let paramIndex = 1;
       pgSql = pgSql.replace(/\?/g, () => `$${paramIndex++}`);
 
+      // Convert double quotes to single quotes for string literals
+      pgSql = pgSql.replace(/"([^"]+)"/g, (match, content) => {
+        if (/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(content)) {
+          return `'${content}'`;
+        }
+        return match;
+      });
+
       // Handle case where params is actually the callback (no params provided)
       const actualParams = Array.isArray(params) ? params : [];
       const actualCallback = typeof params === 'function' ? params : callback;
@@ -86,6 +103,14 @@ if (isProduction && process.env.DATABASE_URL) {
       let pgSql = sql;
       let paramIndex = 1;
       pgSql = pgSql.replace(/\?/g, () => `$${paramIndex++}`);
+
+      // Convert double quotes to single quotes for string literals
+      pgSql = pgSql.replace(/"([^"]+)"/g, (match, content) => {
+        if (/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(content)) {
+          return `'${content}'`;
+        }
+        return match;
+      });
 
       // Handle case where params is actually the callback (no params provided)
       const actualParams = Array.isArray(params) ? params : [];
