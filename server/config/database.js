@@ -1,126 +1,24 @@
-const { Pool } = require('pg');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
-// Use PostgreSQL in production (Render), SQLite for development
-const isProduction = process.env.NODE_ENV === 'production';
+// Use SQLite for both development and production
+const dbPath = path.join(__dirname, '../../kira-save.db');
 
-let pool;
-
-if (isProduction && process.env.DATABASE_URL) {
-  // Use PostgreSQL in production (Render)
-  console.log('DATABASE_URL found:', process.env.DATABASE_URL.substring(0, 20) + '...');
-  try {
-    const pgPool = new Pool({
-      connectionString: process.env.DATABASE_URL,
-      ssl: {
-        rejectUnauthorized: false
-      }
-    });
-    console.log('Connected to PostgreSQL (Render)');
-
-  // Create wrapper that mimics SQLite API
-  pool = {
-    query: (sql, params, callback) => {
-      // Convert SQLite ? to PostgreSQL $1, $2, etc.
-      let pgSql = sql;
-      let paramIndex = 1;
-      pgSql = pgSql.replace(/\?/g, () => `$${paramIndex++}`);
-
-      const promise = pgPool.query(pgSql, params)
-        .then(result => result.rows);
-
-      if (callback) {
-        promise.then(rows => callback(null, rows)).catch(err => callback(err));
-      }
-      return promise;
-    },
-    run: (sql, params, callback) => {
-      // Convert SQLite ? to PostgreSQL $1, $2, etc.
-      let pgSql = sql;
-      let paramIndex = 1;
-      pgSql = pgSql.replace(/\?/g, () => `$${paramIndex++}`);
-
-      const promise = pgPool.query(pgSql, params)
-        .then(result => {
-          const lastId = result.rows[0] ? result.rows[0].id : null;
-          return { lastID: lastId, changes: result.rowCount };
-        });
-
-      if (callback) {
-        promise.then(result => callback(null, result)).catch(err => callback(err));
-      }
-      return promise;
-    },
-    get: (sql, params, callback) => {
-      // Convert SQLite ? to PostgreSQL $1, $2, etc.
-      let pgSql = sql;
-      let paramIndex = 1;
-      pgSql = pgSql.replace(/\?/g, () => `$${paramIndex++}`);
-
-      const promise = pgPool.query(pgSql, params)
-        .then(result => result.rows[0] || null);
-
-      if (callback) {
-        promise.then(row => callback(null, row)).catch(err => callback(err));
-      }
-      return promise;
-    },
-    all: (sql, params, callback) => {
-      // Convert SQLite ? to PostgreSQL $1, $2, etc.
-      let pgSql = sql;
-      let paramIndex = 1;
-      pgSql = pgSql.replace(/\?/g, () => `$${paramIndex++}`);
-
-      const promise = pgPool.query(pgSql, params)
-        .then(result => result.rows);
-
-      if (callback) {
-        promise.then(rows => callback(null, rows)).catch(err => callback(err));
-      }
-      return promise;
-    }
-  };
-  } catch (err) {
-    console.error('Error creating PostgreSQL pool:', err);
-    console.error('DATABASE_URL:', process.env.DATABASE_URL);
-    // Fallback to SQLite if PostgreSQL fails
-    const dbPath = path.join(__dirname, '../../kira-save.db');
-    const db = new sqlite3.Database(dbPath, (err) => {
-      if (err) {
-        console.error('Error opening SQLite database:', err.message);
-      } else {
-        console.log('Connected to SQLite database (fallback)');
-        initializeSQLiteTables(db);
-      }
-    });
-
-    pool = {
-      query: db.all.bind(db),
-      run: db.run.bind(db),
-      get: db.get.bind(db),
-      all: db.all.bind(db)
-    };
+const db = new sqlite3.Database(dbPath, (err) => {
+  if (err) {
+    console.error('Error opening database:', err.message);
+  } else {
+    console.log('Connected to SQLite database at:', dbPath);
+    initializeDatabase();
   }
-} else {
-  // Use SQLite for development
-  const dbPath = path.join(__dirname, '../../kira-save.db');
-  const db = new sqlite3.Database(dbPath, (err) => {
-    if (err) {
-      console.error('Error opening SQLite database:', err.message);
-    } else {
-      console.log('Connected to SQLite database at:', dbPath);
-      initializeSQLiteTables(db);
-    }
-  });
+});
 
-  pool = {
-    query: db.all.bind(db),
-    run: db.run.bind(db),
-    get: db.get.bind(db),
-    all: db.all.bind(db)
-  };
-}
+const pool = {
+  query: db.all.bind(db),
+  run: db.run.bind(db),
+  get: db.get.bind(db),
+  all: db.all.bind(db)
+};
 
 function initializeDatabase() {
   if (isProduction && process.env.DATABASE_URL) {

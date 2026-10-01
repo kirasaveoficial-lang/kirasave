@@ -7,12 +7,6 @@ const rateLimit = require('express-rate-limit');
 
 const db = require('./server/config/database');
 
-// Initialize PostgreSQL tables if in production
-if (process.env.NODE_ENV === 'production' && process.env.DATABASE_URL) {
-  console.log('Initializing PostgreSQL tables...');
-  require('./server/utils/initPostgres');
-}
-
 // Start online status checker after database is initialized
 // Temporarily disabled due to PostgreSQL migration issues
 // setTimeout(() => {
