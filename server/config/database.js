@@ -1,19 +1,9 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
-const fs = require('fs');
 
 // Use persistent disk on Render, local file for development
 const isRender = process.env.RENDER || process.env.RENDER_EXTERNAL_URL || process.env.RENDER_SERVICE_NAME;
 const dbPath = isRender ? '/data/kira-save.db' : path.join(__dirname, '../../kira-save.db');
-
-// Ensure directory exists for Render
-if (isRender) {
-  const dataDir = '/data';
-  if (!fs.existsSync(dataDir)) {
-    console.log('Creating /data directory...');
-    fs.mkdirSync(dataDir, { recursive: true });
-  }
-}
 
 const db = new sqlite3.Database(dbPath, (err) => {
   if (err) {
