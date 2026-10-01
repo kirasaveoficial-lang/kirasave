@@ -1,20 +1,46 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const fs = require('fs');
 
 // Use persistent disk on Render, local file for development
 const isRender = process.env.RENDER || process.env.RENDER_EXTERNAL_URL || process.env.RENDER_SERVICE_NAME;
 const dbPath = isRender ? '/data/kira-save.db' : path.join(__dirname, '../../kira-save.db');
 
+// Ensure directory exists for Render
+if (isRender) {
+  const dataDir = '/data';
+  if (!fs.existsSync(dataDir)) {
+    console.log('Creating /data directory...');
+    fs.mkdirSync(dataDir, { recursive: true });
+  }
+}
+
 const db = new sqlite3.Database(dbPath, (err) => {
   if (err) {
     console.error('Error opening database:', err.message);
+    console.error('Database path:', dbPath);
+    console.error('Render environment:', isRender);
+    // Fallback to local database if Render disk fails
+    if (isRender) {
+      console.log('Falling back to local database...');
+      const fallbackPath = path.join(__dirname, '../../kira-save.db');
+      const fallbackDb = new sqlite3.Database(fallbackPath, (fallbackErr) => {
+        if (fallbackErr) {
+          console.error('Fallback database also failed:', fallbackErr.message);
+        } else {
+          console.log('Connected to fallback database at:', fallbackPath);
+          initializeDatabase();
+        }
+      });
+    }
   } else {
-    console.log('Connected to SQLite database');
+    console.log('Connected to SQLite database at:', dbPath);
     initializeDatabase();
   }
 });
 
 function initializeDatabase() {
+  console.log('Initializing database tables...');
   db.serialize(() => {
     // Users table
     db.run(`
