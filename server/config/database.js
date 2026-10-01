@@ -27,53 +27,58 @@ if (isProduction && process.env.DATABASE_URL) {
       let paramIndex = 1;
       pgSql = pgSql.replace(/\?/g, () => `$${paramIndex++}`);
 
-      pgPool.query(pgSql, params)
-        .then(result => {
-          callback(null, result.rows);
-        })
-        .catch(err => {
-          callback(err);
-        });
+      const promise = pgPool.query(pgSql, params)
+        .then(result => result.rows);
+
+      if (callback) {
+        promise.then(rows => callback(null, rows)).catch(err => callback(err));
+      }
+      return promise;
     },
     run: (sql, params, callback) => {
+      // Convert SQLite ? to PostgreSQL $1, $2, etc.
       let pgSql = sql;
       let paramIndex = 1;
       pgSql = pgSql.replace(/\?/g, () => `$${paramIndex++}`);
 
-      pgPool.query(pgSql, params)
+      const promise = pgPool.query(pgSql, params)
         .then(result => {
           const lastId = result.rows[0] ? result.rows[0].id : null;
-          callback(null, { lastID: lastId, changes: result.rowCount });
-        })
-        .catch(err => {
-          callback(err);
+          return { lastID: lastId, changes: result.rowCount };
         });
+
+      if (callback) {
+        promise.then(result => callback(null, result)).catch(err => callback(err));
+      }
+      return promise;
     },
     get: (sql, params, callback) => {
+      // Convert SQLite ? to PostgreSQL $1, $2, etc.
       let pgSql = sql;
       let paramIndex = 1;
       pgSql = pgSql.replace(/\?/g, () => `$${paramIndex++}`);
 
-      pgPool.query(pgSql, params)
-        .then(result => {
-          callback(null, result.rows[0] || null);
-        })
-        .catch(err => {
-          callback(err);
-        });
+      const promise = pgPool.query(pgSql, params)
+        .then(result => result.rows[0] || null);
+
+      if (callback) {
+        promise.then(row => callback(null, row)).catch(err => callback(err));
+      }
+      return promise;
     },
     all: (sql, params, callback) => {
+      // Convert SQLite ? to PostgreSQL $1, $2, etc.
       let pgSql = sql;
       let paramIndex = 1;
       pgSql = pgSql.replace(/\?/g, () => `$${paramIndex++}`);
 
-      pgPool.query(pgSql, params)
-        .then(result => {
-          callback(null, result.rows);
-        })
-        .catch(err => {
-          callback(err);
-        });
+      const promise = pgPool.query(pgSql, params)
+        .then(result => result.rows);
+
+      if (callback) {
+        promise.then(rows => callback(null, rows)).catch(err => callback(err));
+      }
+      return promise;
     }
   };
   } catch (err) {
