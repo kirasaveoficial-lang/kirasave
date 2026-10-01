@@ -415,7 +415,7 @@ const authController = {
   heartbeat: (req, res) => {
     // Update last_seen timestamp to keep user online
     db.run(
-      'UPDATE users SET is_online = 1, last_seen = CURRENT_TIMESTAMP WHERE id = ?',
+      'UPDATE users SET is_online = 1, last_seen = NOW() WHERE id = ?',
       [req.user.id],
       (err) => {
         if (err) {

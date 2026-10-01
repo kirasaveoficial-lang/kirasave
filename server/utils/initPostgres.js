@@ -129,7 +129,7 @@ async function initializePostgreSQLTables() {
         title VARCHAR(255) NOT NULL,
         message TEXT,
         link VARCHAR(500),
-        read_status BOOLEAN DEFAULT FALSE,
+        is_read BOOLEAN DEFAULT FALSE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
       )`,
@@ -226,6 +226,15 @@ async function initializePostgreSQLTables() {
         is_cover BOOLEAN DEFAULT FALSE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (save_id) REFERENCES saves(id) ON DELETE CASCADE
+      )`,
+
+      // Search history table
+      `CREATE TABLE IF NOT EXISTS search_history (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL,
+        query VARCHAR(255) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
       )`
     ];
 
