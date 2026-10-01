@@ -26,7 +26,10 @@ const authController = {
       function(err) {
         if (err) {
           console.error('Registration error:', err);
-          if (err.message.includes('UNIQUE constraint failed')) {
+          // Handle both SQLite and PostgreSQL unique constraint errors
+          if (err.message.includes('UNIQUE constraint failed') ||
+              err.message.includes('duplicate key value violates unique constraint') ||
+              err.code === '23505') {
             return res.status(400).json({ error: 'Username or email already exists' });
           }
           return res.status(500).json({ error: 'Registration failed: ' + err.message });
