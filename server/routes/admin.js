@@ -36,4 +36,8 @@ router.get('/users/banned', authenticateToken, requireAdmin, adminController.get
 router.get('/users/:id/ban-details', authenticateToken, requireAdmin, adminController.getUserBanDetails);
 router.put('/users/:id/unban', authenticateToken, requireAdmin, adminController.unbanUser);
 
+// User tags management
+router.post('/users/:id/tags', authenticateToken, requireAdmin, adminController.assignUserTag);
+router.delete('/users/:id/tags/:tagId', authenticateToken, requireAdmin, adminController.removeUserTag);
+
 module.exports = router;

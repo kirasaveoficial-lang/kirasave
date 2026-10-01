@@ -2967,9 +2967,9 @@ async function assignTagToUser() {
     }
 
     try {
-        await apiCall('/tags/assign', {
+        await apiCall(`/admin/users/${userId}/tags`, {
             method: 'POST',
-            body: JSON.stringify({ user_id: parseInt(userId), tag_id: parseInt(tagId) })
+            body: JSON.stringify({ tagId: parseInt(tagId) })
         });
         showToast('Tag atribuída com sucesso!', 'success');
         loadUserTags(userId);
@@ -2980,7 +2980,7 @@ async function assignTagToUser() {
 
 async function removeTagFromUser(userId, tagId) {
     try {
-        await apiCall(`/tags/user/${userId}/tag/${tagId}`, { method: 'DELETE' });
+        await apiCall(`/admin/users/${userId}/tags/${tagId}`, { method: 'DELETE' });
         showToast('Tag removida com sucesso!', 'success');
         loadUserTags(userId);
     } catch (error) {

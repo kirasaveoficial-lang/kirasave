@@ -825,6 +825,50 @@ const adminController = {
         res.json({ message: 'User unbanned successfully' });
       }
     );
+  },
+
+  assignUserTag: (req, res) => {
+    const { id } = req.params;
+    const { tagId } = req.body;
+
+    // Check if tag exists
+    db.get('SELECT * FROM tags WHERE id = ?', [tagId], (err, tag) => {
+      if (err) {
+        return res.status(500).json({ error: 'Failed to fetch tag' });
+      }
+      if (!tag) {
+        return res.status(404).json({ error: 'Tag not found' });
+      }
+
+      // Assign tag to user
+      db.run(
+        'INSERT OR IGNORE INTO user_tags (user_id, tag_id) VALUES (?, ?)',
+        [id, tagId],
+        function(err) {
+          if (err) {
+            return res.status(500).json({ error: 'Failed to assign tag' });
+          }
+
+          res.json({ message: 'Tag assigned successfully' });
+        }
+      );
+    });
+  },
+
+  removeUserTag: (req, res) => {
+    const { id, tagId } = req.params;
+
+    db.run(
+      'DELETE FROM user_tags WHERE user_id = ? AND tag_id = ?',
+      [id, tagId],
+      function(err) {
+        if (err) {
+          return res.status(500).json({ error: 'Failed to remove tag' });
+        }
+
+        res.json({ message: 'Tag removed successfully' });
+      }
+    );
   }
 };
 
