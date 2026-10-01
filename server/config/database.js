@@ -1,28 +1,12 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
-// Use persistent disk on Render, local file for development
-const isRender = process.env.RENDER || process.env.RENDER_EXTERNAL_URL || process.env.RENDER_SERVICE_NAME;
-const dbPath = isRender ? '/data/kira-save.db' : path.join(__dirname, '../../kira-save.db');
+// Use local database for both development and Render (no persistent disk)
+const dbPath = path.join(__dirname, '../../kira-save.db');
 
 const db = new sqlite3.Database(dbPath, (err) => {
   if (err) {
     console.error('Error opening database:', err.message);
-    console.error('Database path:', dbPath);
-    console.error('Render environment:', isRender);
-    // Fallback to local database if Render disk fails
-    if (isRender) {
-      console.log('Falling back to local database...');
-      const fallbackPath = path.join(__dirname, '../../kira-save.db');
-      const fallbackDb = new sqlite3.Database(fallbackPath, (fallbackErr) => {
-        if (fallbackErr) {
-          console.error('Fallback database also failed:', fallbackErr.message);
-        } else {
-          console.log('Connected to fallback database at:', fallbackPath);
-          initializeDatabase();
-        }
-      });
-    }
   } else {
     console.log('Connected to SQLite database at:', dbPath);
     initializeDatabase();
