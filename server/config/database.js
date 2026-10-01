@@ -74,13 +74,16 @@ if (isProduction && process.env.DATABASE_URL) {
       pgSql = pgSql.replace(/\?/g, () => `$${paramIndex++}`);
 
       // Convert double quotes to single quotes for string literals (only for specific keywords)
-      const keywords = ['approved', 'pending', 'draft', 'published', 'active', 'inactive'];
+      const keywords = ['approved', 'pending', 'draft', 'published', 'active', 'inactive', 'rejected', 'resolved'];
       pgSql = pgSql.replace(/"([^"]+)"/g, (match, content) => {
         if (keywords.includes(content)) {
           return `'${content}'`;
         }
         return match;
       });
+
+      // Convert SQLite CURRENT_TIMESTAMP to PostgreSQL NOW()
+      pgSql = pgSql.replace(/CURRENT_TIMESTAMP/g, 'NOW()');
 
       // Handle case where params is actually the callback (no params provided)
       const actualParams = Array.isArray(params) ? params : [];
@@ -107,13 +110,16 @@ if (isProduction && process.env.DATABASE_URL) {
       pgSql = pgSql.replace(/\?/g, () => `$${paramIndex++}`);
 
       // Convert double quotes to single quotes for string literals (only for specific keywords)
-      const keywords = ['approved', 'pending', 'draft', 'published', 'active', 'inactive'];
+      const keywords = ['approved', 'pending', 'draft', 'published', 'active', 'inactive', 'rejected', 'resolved'];
       pgSql = pgSql.replace(/"([^"]+)"/g, (match, content) => {
         if (keywords.includes(content)) {
           return `'${content}'`;
         }
         return match;
       });
+
+      // Convert SQLite CURRENT_TIMESTAMP to PostgreSQL NOW()
+      pgSql = pgSql.replace(/CURRENT_TIMESTAMP/g, 'NOW()');
 
       // Handle case where params is actually the callback (no params provided)
       const actualParams = Array.isArray(params) ? params : [];
