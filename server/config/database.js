@@ -41,7 +41,13 @@ if (isProduction && process.env.DATABASE_URL) {
       });
 
       // Handle INSERT OR IGNORE -> INSERT ... ON CONFLICT DO NOTHING
-      pgSql = pgSql.replace(/INSERT OR IGNORE/gi, 'INSERT');
+      if (pgSql.trim().toUpperCase().startsWith('INSERT OR IGNORE')) {
+        pgSql = pgSql.replace(/INSERT OR IGNORE/gi, 'INSERT');
+        // Add ON CONFLICT DO NOTHING if it's an INSERT into a table with unique constraints
+        if (pgSql.includes('tags') || pgSql.includes('users')) {
+          pgSql += ' ON CONFLICT DO NOTHING';
+        }
+      }
 
       // Add RETURNING clause to INSERT statements to get the inserted ID
       if (pgSql.trim().toUpperCase().startsWith('INSERT') && !pgSql.toUpperCase().includes('RETURNING')) {
@@ -62,7 +68,8 @@ if (isProduction && process.env.DATABASE_URL) {
         const changes = result.rowCount;
 
         if (actualCallback) {
-          actualCallback(null, { lastID: lastId, changes: changes });
+          // Call callback with 'this' context containing lastID (SQLite compatibility)
+          actualCallback.call({ lastID: lastId, changes: changes }, null, { lastID: lastId, changes: changes });
         }
       });
     },

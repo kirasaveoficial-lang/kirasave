@@ -16,6 +16,9 @@ const db = require('./server/config/database');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Trust proxy for Render (fixes rate limiter warning)
+app.set('trust proxy', true);
+
 // Security middleware
 app.use(helmet({
   contentSecurityPolicy: false,
