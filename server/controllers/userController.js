@@ -231,7 +231,8 @@ const userController = {
 
     db.all(query, params, (err, notifications) => {
       if (err) {
-        return res.status(500).json({ error: 'Failed to fetch notifications' });
+        console.error('Failed to fetch notifications:', err);
+        return res.status(500).json({ error: 'Failed to fetch notifications', details: err.message });
       }
 
       // Get unread count
@@ -240,7 +241,8 @@ const userController = {
         [req.user.id],
         (err, result) => {
           if (err) {
-            return res.status(500).json({ error: 'Failed to count notifications' });
+            console.error('Failed to count notifications:', err);
+            return res.status(500).json({ error: 'Failed to count notifications', details: err.message });
           }
 
           res.json({

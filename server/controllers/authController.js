@@ -420,7 +420,7 @@ const authController = {
       (err) => {
         if (err) {
           console.error('Error updating heartbeat:', err);
-          return res.status(500).json({ error: 'Failed to update heartbeat' });
+          return res.status(500).json({ error: 'Failed to update heartbeat', details: err.message });
         }
         res.json({ message: 'Heartbeat updated' });
       }
