@@ -30,10 +30,11 @@ if (isProduction && process.env.DATABASE_URL) {
       let paramIndex = 1;
       pgSql = pgSql.replace(/\?/g, () => `$${paramIndex++}`);
 
-      // Convert double quotes to single quotes for string literals
+      // Convert double quotes to single quotes for string literals (only for non-identifier strings)
       pgSql = pgSql.replace(/"([^"]+)"/g, (match, content) => {
-        // If it's a keyword like "approved", convert to single quotes
-        if (/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(content)) {
+        // Don't convert if it's followed by common SQL keywords (table/column identifiers)
+        const keywords = ['approved', 'pending', 'draft', 'published', 'active', 'inactive'];
+        if (keywords.includes(content)) {
           return `'${content}'`;
         }
         return match;
@@ -72,9 +73,10 @@ if (isProduction && process.env.DATABASE_URL) {
       let paramIndex = 1;
       pgSql = pgSql.replace(/\?/g, () => `$${paramIndex++}`);
 
-      // Convert double quotes to single quotes for string literals
+      // Convert double quotes to single quotes for string literals (only for specific keywords)
+      const keywords = ['approved', 'pending', 'draft', 'published', 'active', 'inactive'];
       pgSql = pgSql.replace(/"([^"]+)"/g, (match, content) => {
-        if (/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(content)) {
+        if (keywords.includes(content)) {
           return `'${content}'`;
         }
         return match;
@@ -104,9 +106,10 @@ if (isProduction && process.env.DATABASE_URL) {
       let paramIndex = 1;
       pgSql = pgSql.replace(/\?/g, () => `$${paramIndex++}`);
 
-      // Convert double quotes to single quotes for string literals
+      // Convert double quotes to single quotes for string literals (only for specific keywords)
+      const keywords = ['approved', 'pending', 'draft', 'published', 'active', 'inactive'];
       pgSql = pgSql.replace(/"([^"]+)"/g, (match, content) => {
-        if (/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(content)) {
+        if (keywords.includes(content)) {
           return `'${content}'`;
         }
         return match;
