@@ -1772,7 +1772,7 @@ function renderSaveCards(saves, containerId) {
         <div class="save-card p-4 rounded-lg cursor-pointer" onclick="window.location.href='/saves/${save.id}'">
             <!-- Thumbnail -->
             <div class="w-full h-32 rounded-lg overflow-hidden mb-3 bg-gray-800">
-                <img src="${save.thumbnail || save.game_cover || '/images/default-game.png'}" alt="${save.title}" class="w-full h-full object-cover">
+                <img src="${save.thumbnail || save.game_cover || '/images/default-game.png'}" alt="${save.title}" class="w-full h-full object-cover" onerror="this.src='${save.game_cover || '/images/default-game.png'}'">
             </div>
 
             <!-- Tags -->

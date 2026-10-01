@@ -59,10 +59,11 @@ const savesController = {
         return res.status(500).json({ error: 'Failed to fetch saves', details: err.message });
       }
 
-      // Add full URL path to file_path and fetch user tags
+      // Add full URL path to file_path and thumbnail, and fetch user tags
       saves = saves.map(save => ({
         ...save,
-        file_path: `/uploads/saves/${save.file_path}`
+        file_path: `/uploads/saves/${save.file_path}`,
+        thumbnail: save.thumbnail ? `/uploads/images/${save.thumbnail}` : save.game_cover
       }));
 
       // Fetch user tags for each save author
@@ -578,7 +579,7 @@ const savesController = {
         }
 
         // Update save with new image
-        const imagePath = 'uploads/images/' + req.file.filename;
+        const imagePath = req.file.filename;
         db.run(
           'UPDATE saves SET thumbnail = ? WHERE id = ?',
           [imagePath, id],
@@ -586,7 +587,7 @@ const savesController = {
             if (err) {
               return res.status(500).json({ error: 'Erro ao atualizar imagem' });
             }
-            res.json({ success: true, thumbnail: imagePath });
+            res.json({ success: true, thumbnail: `/uploads/images/${imagePath}` });
           }
         );
       });
