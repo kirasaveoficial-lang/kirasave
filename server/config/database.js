@@ -106,9 +106,6 @@ if (isProduction && process.env.DATABASE_URL) {
       let paramIndex = 1;
       pgSql = pgSql.replace(/\?/g, () => `$${paramIndex++}`);
 
-      console.log('Executing SQL:', pgSql);
-      console.log('With params:', params);
-
       // Handle case where params is actually the callback (no params provided)
       const actualParams = Array.isArray(params) ? params : [];
       const actualCallback = typeof params === 'function' ? params : callback;
