@@ -6,6 +6,8 @@ const authController = {
   register: (req, res) => {
     const { username, email, password } = req.body;
 
+    console.log('Registration attempt:', { username, email });
+
     if (!username || !email || !password) {
       return res.status(400).json({ error: 'All fields are required' });
     }
@@ -23,13 +25,15 @@ const authController = {
       [username, email, hashedPassword, defaultAvatar],
       function(err) {
         if (err) {
+          console.error('Registration error:', err);
           if (err.message.includes('UNIQUE constraint failed')) {
             return res.status(400).json({ error: 'Username or email already exists' });
           }
-          return res.status(500).json({ error: 'Registration failed' });
+          return res.status(500).json({ error: 'Registration failed: ' + err.message });
         }
 
         const userId = this.lastID;
+        console.log('User registered successfully:', { userId, username });
 
         // Check if this is the first user - make them admin
         db.get('SELECT COUNT(*) as count FROM users', (err, result) => {
