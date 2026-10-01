@@ -1447,7 +1447,10 @@ function renderAdminBannedUsersPage() {
 }
 
 // ===== Data Loading Functions =====
+let isLoadingGames = false;
 async function loadGames() {
+    if (isLoadingGames) return;
+    isLoadingGames = true;
     try {
         console.log('Loading games...');
         const data = await apiCall('/saves/games');
@@ -1455,6 +1458,8 @@ async function loadGames() {
         state.games = data;
     } catch (error) {
         console.error('Failed to load games:', error);
+    } finally {
+        isLoadingGames = false;
     }
 }
 
