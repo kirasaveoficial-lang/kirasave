@@ -52,17 +52,26 @@ if (isProduction && process.env.DATABASE_URL) {
       // Handle INSERT OR IGNORE -> INSERT ... ON CONFLICT DO NOTHING
       pgSql = pgSql.replace(/INSERT OR IGNORE/gi, 'INSERT');
 
-      pool.query(pgSql, params, (err, result) => {
+      // Add RETURNING clause to INSERT statements to get the inserted ID
+      if (pgSql.trim().toUpperCase().startsWith('INSERT') && !pgSql.toUpperCase().includes('RETURNING')) {
+        pgSql += ' RETURNING id';
+      }
+
+      // Handle case where params is actually the callback (no params provided)
+      const actualParams = Array.isArray(params) ? params : [];
+      const actualCallback = typeof params === 'function' ? params : callback;
+
+      pool.query(pgSql, actualParams, (err, result) => {
         if (err) {
-          if (callback) callback(err);
+          if (actualCallback) actualCallback(err);
           return;
         }
 
         const lastId = result.rows[0] ? result.rows[0].id : null;
         const changes = result.rowCount;
 
-        if (callback) {
-          callback(null, { lastID: lastId, changes: changes });
+        if (actualCallback) {
+          actualCallback(null, { lastID: lastId, changes: changes });
         }
       });
     },
@@ -73,16 +82,20 @@ if (isProduction && process.env.DATABASE_URL) {
       let paramIndex = 1;
       pgSql = pgSql.replace(/\?/g, () => `$${paramIndex++}`);
 
-      pool.query(pgSql, params, (err, result) => {
+      // Handle case where params is actually the callback (no params provided)
+      const actualParams = Array.isArray(params) ? params : [];
+      const actualCallback = typeof params === 'function' ? params : callback;
+
+      pool.query(pgSql, actualParams, (err, result) => {
         if (err) {
-          if (callback) callback(err);
+          if (actualCallback) actualCallback(err);
           return;
         }
 
         const row = result.rows[0] || null;
 
-        if (callback) {
-          callback(null, row);
+        if (actualCallback) {
+          actualCallback(null, row);
         }
       });
     },
@@ -96,17 +109,21 @@ if (isProduction && process.env.DATABASE_URL) {
       console.log('Executing SQL:', pgSql);
       console.log('With params:', params);
 
-      pool.query(pgSql, params, (err, result) => {
+      // Handle case where params is actually the callback (no params provided)
+      const actualParams = Array.isArray(params) ? params : [];
+      const actualCallback = typeof params === 'function' ? params : callback;
+
+      pool.query(pgSql, actualParams, (err, result) => {
         if (err) {
           console.error('Database error:', err);
-          if (callback) callback(err);
+          if (actualCallback) actualCallback(err);
           return;
         }
 
         const rows = result.rows || [];
 
-        if (callback) {
-          callback(null, rows);
+        if (actualCallback) {
+          actualCallback(null, rows);
         }
       });
     },
