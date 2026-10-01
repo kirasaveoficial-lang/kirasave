@@ -6,11 +6,12 @@ const path = require('path');
 const isProduction = process.env.NODE_ENV === 'production';
 
 let pool;
+let pgPool; // Store actual PostgreSQL pool separately
 
 if (isProduction && process.env.DATABASE_URL) {
   // Use PostgreSQL in production (Render)
   console.log('DATABASE_URL found:', process.env.DATABASE_URL.substring(0, 20) + '...');
-  pool = new Pool({
+  pgPool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: {
       rejectUnauthorized: false
@@ -19,29 +20,9 @@ if (isProduction && process.env.DATABASE_URL) {
   console.log('Connected to PostgreSQL (Render)');
 
   // Initialize PostgreSQL tables
-  initializePostgreSQLTables(pool);
-} else {
-  // Use SQLite for development
-  const dbPath = path.join(__dirname, '../../kira-save.db');
-  const db = new sqlite3.Database(dbPath, (err) => {
-    if (err) {
-      console.error('Error opening SQLite database:', err.message);
-    } else {
-      console.log('Connected to SQLite database at:', dbPath);
-      initializeSQLiteTables(db);
-    }
-  });
+  initializePostgreSQLTables(pgPool);
 
-  pool = {
-    query: db.all.bind(db),
-    run: db.run.bind(db),
-    get: db.get.bind(db),
-    all: db.all.bind(db)
-  };
-}
-
-// Create wrapper for PostgreSQL that mimics SQLite API
-if (isProduction && process.env.DATABASE_URL) {
+  // Create wrapper for PostgreSQL that mimics SQLite API
   pool = {
     run: (sql, params, callback) => {
       // Convert SQLite ? to PostgreSQL $1, $2, etc.
@@ -61,7 +42,7 @@ if (isProduction && process.env.DATABASE_URL) {
       const actualParams = Array.isArray(params) ? params : [];
       const actualCallback = typeof params === 'function' ? params : callback;
 
-      pool.query(pgSql, actualParams, (err, result) => {
+      pgPool.query(pgSql, actualParams, (err, result) => {
         if (err) {
           if (actualCallback) actualCallback(err);
           return;
@@ -86,7 +67,7 @@ if (isProduction && process.env.DATABASE_URL) {
       const actualParams = Array.isArray(params) ? params : [];
       const actualCallback = typeof params === 'function' ? params : callback;
 
-      pool.query(pgSql, actualParams, (err, result) => {
+      pgPool.query(pgSql, actualParams, (err, result) => {
         if (err) {
           if (actualCallback) actualCallback(err);
           return;
@@ -110,7 +91,7 @@ if (isProduction && process.env.DATABASE_URL) {
       const actualParams = Array.isArray(params) ? params : [];
       const actualCallback = typeof params === 'function' ? params : callback;
 
-      pool.query(pgSql, actualParams, (err, result) => {
+      pgPool.query(pgSql, actualParams, (err, result) => {
         if (err) {
           console.error('Database error:', err);
           if (actualCallback) actualCallback(err);
@@ -128,6 +109,24 @@ if (isProduction && process.env.DATABASE_URL) {
     query: (sql, params, callback) => {
       pool.all(sql, params, callback);
     }
+  };
+} else {
+  // Use SQLite for development
+  const dbPath = path.join(__dirname, '../../kira-save.db');
+  const db = new sqlite3.Database(dbPath, (err) => {
+    if (err) {
+      console.error('Error opening SQLite database:', err.message);
+    } else {
+      console.log('Connected to SQLite database at:', dbPath);
+      initializeSQLiteTables(db);
+    }
+  });
+
+  pool = {
+    query: db.all.bind(db),
+    run: db.run.bind(db),
+    get: db.get.bind(db),
+    all: db.all.bind(db)
   };
 }
 
