@@ -31,6 +31,16 @@ const authController = {
 
         const userId = this.lastID;
 
+        // Check if this is the first user - make them admin
+        db.get('SELECT COUNT(*) as count FROM users', (err, result) => {
+          if (!err && result.count === 1) {
+            db.run('UPDATE users SET is_admin = 1 WHERE id = ?', [userId], (err) => {
+              if (err) console.error('Error setting first user as admin:', err);
+              else console.log('First user set as admin');
+            });
+          }
+        });
+
         // Ensure "Membro" tag exists and assign it to new user
         db.run(
           `INSERT OR IGNORE INTO tags (name, color, icon, description) VALUES (?, ?, ?, ?)`,

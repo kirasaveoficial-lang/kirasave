@@ -1,7 +1,8 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
-const dbPath = path.join(__dirname, '../../kira-save.db');
+// Use persistent disk on Render, local file for development
+const dbPath = process.env.RENDER ? '/data/kira-save.db' : path.join(__dirname, '../../kira-save.db');
 
 const db = new sqlite3.Database(dbPath, (err) => {
   if (err) {
