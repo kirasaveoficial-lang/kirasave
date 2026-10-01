@@ -165,8 +165,8 @@ const authController = {
         // Get user stats
         db.get(
           `SELECT
-            (SELECT COUNT(*) FROM saves WHERE user_id = ? AND status = 'approved') as saves_count,
-            (SELECT COUNT(*) FROM favorites f JOIN saves s ON f.save_id = s.id WHERE s.user_id = ? AND s.status = 'approved') as favorites_count`,
+            (SELECT COUNT(*) FROM saves WHERE user_id = ? AND status = "approved") as saves_count,
+            (SELECT COUNT(*) FROM favorites f JOIN saves s ON f.save_id = s.id WHERE s.user_id = ? AND s.status = "approved") as favorites_count`,
           [req.user.id, req.user.id],
           (err, stats) => {
             if (err) stats = { saves_count: 0, favorites_count: 0 };
@@ -380,14 +380,14 @@ const authController = {
 
             // Get user stats
             db.get(
-              'SELECT COUNT(*) as saves_count FROM saves WHERE user_id = ? AND status = 'approved'',
+              'SELECT COUNT(*) as saves_count FROM saves WHERE user_id = ? AND status = "approved"',
               [userId],
               (err, stats) => {
                 const savesCount = stats ? stats.saves_count : 0;
 
                 // Get real favorites count
                 db.get(
-                  'SELECT COUNT(*) as favorites_count FROM favorites f JOIN saves s ON f.save_id = s.id WHERE s.user_id = ? AND s.status = 'approved'',
+                  'SELECT COUNT(*) as favorites_count FROM favorites f JOIN saves s ON f.save_id = s.id WHERE s.user_id = ? AND s.status = "approved"',
                   [userId],
                   (err, favStats) => {
                     const favoritesCount = favStats ? favStats.favorites_count : 0;

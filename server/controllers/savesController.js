@@ -11,7 +11,7 @@ const savesController = {
     if (sort === 'popular') orderBy = 'download_count DESC';
     if (sort === 'rated') orderBy = 'rating_avg DESC';
 
-    let whereClause = 'WHERE s.status = 'approved'';
+    let whereClause = 'WHERE s.status = "approved"';
     const params = [];
 
     if (game) {

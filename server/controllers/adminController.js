@@ -148,7 +148,7 @@ const adminController = {
     const { id } = req.params;
 
     db.run(
-      'UPDATE saves SET status = 'approved', updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+      'UPDATE saves SET status = "approved", updated_at = CURRENT_TIMESTAMP WHERE id = ?',
       [id],
       function(err) {
         if (err) {
