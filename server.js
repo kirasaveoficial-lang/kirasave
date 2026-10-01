@@ -8,9 +8,10 @@ const rateLimit = require('express-rate-limit');
 const db = require('./server/config/database');
 
 // Start online status checker after database is initialized
-setTimeout(() => {
-  require('./server/utils/onlineStatus');
-}, 2000);
+// Temporarily disabled due to PostgreSQL migration issues
+// setTimeout(() => {
+//   require('./server/utils/onlineStatus');
+// }, 2000);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
