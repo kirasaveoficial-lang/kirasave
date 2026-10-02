@@ -1,5 +1,6 @@
 const db = require('../config/database');
 const path = require('path');
+const fs = require('fs');
 
 const adminController = {
   getDashboardStats: (req, res) => {
@@ -131,16 +132,53 @@ const adminController = {
 
   downloadPendingSave: (req, res) => {
     const { id } = req.params;
+    const saveId = parseInt(id, 10);
 
-    db.get('SELECT * FROM saves WHERE id = ?', [id], (err, save) => {
-      if (err || !save) {
+    console.log('=== ADMIN DOWNLOAD REQUEST ===');
+    console.log('Save ID (parsed):', saveId, '(original:', id, ')');
+
+    if (isNaN(saveId)) {
+      console.error('Invalid save ID:', id);
+      return res.status(400).json({ error: 'Invalid save ID' });
+    }
+
+    db.get('SELECT * FROM saves WHERE id = ?', [saveId], (err, save) => {
+      if (err) {
+        console.error('Database error:', err);
+        return res.status(500).json({ error: 'Database error' });
+      }
+
+      if (!save) {
+        console.error('Save not found:', saveId);
         return res.status(404).json({ error: 'Save not found' });
       }
 
+      console.log('Save found:', { id: save.id, title: save.title, file_path: save.file_path });
+
       // Admin can download any save regardless of status
-      // Use full path for download
-      const filePath = path.join(__dirname, '../../public/uploads/saves/', save.file_path);
-      res.download(filePath);
+      // Check if file_path is a Cloudinary URL
+      if (save.file_path.startsWith('http')) {
+        console.log('Download from Cloudinary URL:', save.file_path);
+        res.redirect(save.file_path);
+      } else {
+        // Use local filesystem
+        const filePath = path.join(__dirname, '../../public/uploads/saves/', save.file_path);
+        console.log('Download from local filesystem:', filePath);
+
+        if (!fs.existsSync(filePath)) {
+          console.error('File does not exist:', filePath);
+          return res.status(404).json({ error: 'File not found on server' });
+        }
+
+        console.log('File exists, starting download...');
+        res.download(filePath, (err) => {
+          if (err) {
+            console.error('Download error:', err);
+            return res.status(500).json({ error: 'Failed to download file' });
+          }
+          console.log('Download completed successfully');
+        });
+      }
     });
   },
 

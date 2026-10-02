@@ -322,30 +322,48 @@ const savesController = {
 
   downloadSave: (req, res) => {
     const { id } = req.params;
+    const saveId = parseInt(id, 10);
 
-    db.get('SELECT * FROM saves WHERE id = ?', [id], (err, save) => {
-      if (err || !save) {
-        console.error('Download error - Save not found:', err);
+    console.log('=== DOWNLOAD REQUEST ===');
+    console.log('Save ID (parsed):', saveId);
+    console.log('Save ID (raw):', id);
+    console.log('User:', req.user ? req.user.id : 'Not logged in');
+
+    if (isNaN(saveId)) {
+      console.error('Invalid save ID:', id);
+      return res.status(400).json({ error: 'Invalid save ID' });
+    }
+
+    db.get('SELECT * FROM saves WHERE id = ?', [saveId], (err, save) => {
+      if (err) {
+        console.error('Database error:', err);
+        return res.status(500).json({ error: 'Database error', details: err.message });
+      }
+
+      if (!save) {
+        console.error('Save not found in database:', saveId);
         return res.status(404).json({ error: 'Save not found' });
       }
 
+      console.log('Save found:', { id: save.id, title: save.title, status: save.status, file_path: save.file_path });
+
       if (save.status !== 'approved') {
-        console.error('Download error - Save not approved:', save.status);
+        console.error('Save not approved:', save.status);
         return res.status(403).json({ error: 'Save is not approved yet' });
       }
 
       // Increment download count
-      db.run('UPDATE saves SET download_count = download_count + 1 WHERE id = ?', [id], (err) => {
+      db.run('UPDATE saves SET download_count = download_count + 1 WHERE id = ?', [saveId], (err) => {
         if (err) console.error('Error updating download count:', err);
       });
 
       // Log download
       if (req.user) {
         db.run('INSERT INTO downloads (user_id, save_id, ip_address) VALUES (?, ?, ?)',
-          [req.user.id, id, req.ip]);
+          [req.user.id, saveId, req.ip]);
       } else {
         db.run('INSERT INTO downloads (save_id, ip_address) VALUES (?, ?)',
-          [id, req.ip]);
+          [saveId, req.ip]);
       }
 
       // Check if file_path is a Cloudinary URL
@@ -364,11 +382,13 @@ const savesController = {
           return res.status(404).json({ error: 'File not found on server' });
         }
 
+        console.log('File exists, starting download...');
         res.download(filePath, (err) => {
           if (err) {
             console.error('Download error:', err);
             return res.status(500).json({ error: 'Failed to download file', details: err.message });
           }
+          console.log('Download completed successfully');
         });
       }
     });

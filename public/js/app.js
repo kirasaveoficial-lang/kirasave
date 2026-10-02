@@ -3457,7 +3457,15 @@ async function downloadSave(id) {
 
         // Ensure id is a number and convert to string
         const saveId = parseInt(id);
-        console.log('Attempting to download save:', saveId, '(original:', id, ')');
+        console.log('=== DOWNLOAD REQUEST START ===');
+        console.log('Save ID (parsed):', saveId, '(original:', id, ')');
+        console.log('Has token:', !!state.token);
+
+        if (isNaN(saveId)) {
+            console.error('Invalid save ID:', id);
+            showToast('ID de save inválido', 'error');
+            return;
+        }
 
         const response = await fetch(`${API_BASE}/saves/${saveId}/download`, {
             method: 'GET',
@@ -3465,6 +3473,7 @@ async function downloadSave(id) {
         });
 
         console.log('Download response status:', response.status);
+        console.log('Download response headers:', Object.fromEntries(response.headers.entries()));
 
         if (!response.ok) {
             const error = await response.json();
@@ -3475,6 +3484,12 @@ async function downloadSave(id) {
         // Get the blob from response
         const blob = await response.blob();
         console.log('Download blob size:', blob.size);
+        console.log('Download blob type:', blob.type);
+
+        if (blob.size === 0) {
+            console.error('Download blob is empty!');
+            throw new Error('Arquivo vazio recebido do servidor');
+        }
 
         // Create download link
         const url = window.URL.createObjectURL(blob);
@@ -3486,6 +3501,7 @@ async function downloadSave(id) {
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
 
+        console.log('Download initiated successfully');
         showToast('Download iniciado!', 'success');
         
         showToast('Download iniciado!', 'success');
@@ -4262,9 +4278,55 @@ async function loadPendingSaves() {
 
 async function downloadPendingSave(id) {
     try {
-        window.location.href = `${API_BASE}/admin/saves/${id}/download`;
+        const headers = {};
+        if (state.token) {
+            headers['Authorization'] = `Bearer ${state.token}`;
+        }
+
+        const saveId = parseInt(id);
+        console.log('=== ADMIN DOWNLOAD REQUEST ===');
+        console.log('Save ID (parsed):', saveId, '(original:', id, ')');
+
+        if (isNaN(saveId)) {
+            console.error('Invalid save ID:', id);
+            showToast('ID de save inválido', 'error');
+            return;
+        }
+
+        const response = await fetch(`${API_BASE}/admin/saves/${saveId}/download`, {
+            method: 'GET',
+            headers
+        });
+
+        console.log('Admin download response status:', response.status);
+
+        if (!response.ok) {
+            const error = await response.json();
+            console.error('Admin download error:', error);
+            throw new Error(error.error || 'Download failed');
+        }
+
+        const blob = await response.blob();
+        console.log('Admin download blob size:', blob.size);
+
+        if (blob.size === 0) {
+            console.error('Admin download blob is empty!');
+            throw new Error('Arquivo vazio recebido do servidor');
+        }
+
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `save-${saveId}.rar`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+
+        console.log('Admin download initiated successfully');
         showToast('Download iniciado!', 'success');
     } catch (error) {
+        console.error('Admin download error:', error);
         showToast('Erro ao baixar arquivo', 'error');
     }
 }
