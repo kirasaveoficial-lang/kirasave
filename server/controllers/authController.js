@@ -431,17 +431,19 @@ const authController = {
     console.log('Heartbeat request from user:', userId);
 
     if (!userId) {
+      console.log('Heartbeat failed: No user ID');
       return res.status(401).json({ error: 'User not authenticated' });
     }
 
     db.run(
       'UPDATE users SET is_online = TRUE, last_seen = NOW() WHERE id = ?',
       [userId],
-      (err) => {
+      function(err) {
         if (err) {
           console.error('Error updating heartbeat:', err);
           return res.status(500).json({ error: 'Failed to update heartbeat', details: err.message });
         }
+        console.log('Heartbeat updated successfully for user:', userId);
         res.json({ message: 'Heartbeat updated' });
       }
     );

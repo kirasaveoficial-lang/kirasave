@@ -2192,7 +2192,7 @@ function renderProfile(user) {
     }
     if (!container) return;
 
-    const isOnline = user.is_online === 1;
+    const isOnline = user.is_online === 1 || user.is_online === true;
     const lastSeenText = isOnline ? 'Online agora' : getLastSeenText(user.last_seen);
 
     // Check if user has any tag - use first tag for styling
@@ -2354,7 +2354,7 @@ function renderUserProfile(user) {
     const container = document.getElementById('user-profile-content');
     if (!container) return;
 
-    const isOnline = user.is_online === 1;
+    const isOnline = user.is_online === 1 || user.is_online === true;
     const lastSeenText = isOnline ? 'Online agora' : getLastSeenText(user.last_seen);
 
     // Check if user has any tag - use first tag for styling
