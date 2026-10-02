@@ -2195,20 +2195,22 @@ function renderProfile(user) {
     const isOnline = user.is_online === 1;
     const lastSeenText = isOnline ? 'Online agora' : getLastSeenText(user.last_seen);
 
-    // Check if user has VIP tag - support both tags and user_tags
+    // Check if user has any tag - use first tag for styling
     const userTags = user.tags || user.user_tags || [];
-    const hasVipTag = userTags && userTags.some(tag => tag.name.toLowerCase().includes('vip'));
-    const vipTag = hasVipTag ? userTags.find(tag => tag.name.toLowerCase().includes('vip')) : null;
-    const vipType = vipTag ? (vipTag.name.includes('Gold') ? 'gold' : vipTag.name.includes('Diamond') ? 'diamond' : vipTag.name.includes('EXTREME') ? 'extreme' : 'platinum') : '';
+    const hasTag = userTags && userTags.length > 0;
+    const mainTag = hasTag ? userTags[0] : null; // Use first tag for styling
+    const tagColor = mainTag ? mainTag.color : null;
+    const tagName = mainTag ? mainTag.name.toLowerCase() : '';
+    const tagType = tagName.includes('Gold') ? 'gold' : tagName.includes('Diamond') ? 'diamond' : tagName.includes('EXTREME') ? 'extreme' : tagName.includes('Ruby') ? 'ruby' : tagName.includes('Platinum') ? 'platinum' : 'standard';
 
     container.innerHTML = `
         <div class="profile-container">
             <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
                 <!-- Discord-style Profile Card (Left Sidebar) -->
                 <div class="lg:col-span-1">
-                    <div class="discord-profile-card glass-card overflow-hidden ${hasVipTag ? `vip-${vipType}` : ''}" id="profile-card" style="${hasVipTag ? `border-color: ${vipTag.color}; box-shadow: 0 10px 30px ${vipTag.color}30;` : ''}">
+                    <div class="discord-profile-card glass-card overflow-hidden ${hasTag ? `vip-${tagType}` : ''}" id="profile-card" style="${hasTag ? `border-color: ${tagColor}; box-shadow: 0 10px 30px ${tagColor}30;` : ''}">
                         <!-- Banner -->
-                        <div class="profile-banner h-24 relative ${hasVipTag ? `vip-${vipType}` : ''}">
+                        <div class="profile-banner h-24 relative ${hasTag ? `vip-${tagType}` : ''}">
                             <div class="particles-mini" id="profile-particles"></div>
                             <!-- Status Badge (Top Right) -->
                             <div class="absolute top-2 right-2">
@@ -2218,16 +2220,17 @@ function renderProfile(user) {
                                 </div>
                             </div>
                         </div>
-                        
+
                         <!-- Avatar Section -->
                         <div class="px-4 pb-4">
                             <div class="relative -mt-12 mb-3 flex justify-center">
                                 <div class="relative">
-                                    <div class="absolute inset-0 bg-gradient-to-r from-purple-500 to-cyan-500 rounded-full blur-xl opacity-50 profile-avatar-glow ${hasVipTag ? `vip-${vipType}` : ''}"></div>
+                                    <div class="absolute inset-0 bg-gradient-to-r from-purple-500 to-cyan-500 rounded-full blur-xl opacity-50 profile-avatar-glow ${hasTag ? `vip-${tagType}` : ''}" style="${hasTag ? `background: linear-gradient(to right, ${tagColor}, ${tagColor});` : ''}"></div>
                                     <img src="${user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username)}&background=8b5cf6&color=fff&size=200&bold=true`}" alt="${user.username}"
-                                         class="relative w-24 h-24 rounded-full object-cover border-4 border-gray-900 profile-avatar cursor-pointer ${hasVipTag ? `vip-${vipType}` : ''}"
+                                         class="relative w-24 h-24 rounded-full object-cover border-4 border-gray-900 profile-avatar cursor-pointer ${hasTag ? `vip-${tagType}` : ''}"
+                                         style="${hasTag ? `border-color: ${tagColor}; box-shadow: 0 0 20px ${tagColor}60;` : ''}"
                                          onclick="window.location.href='/settings'">
-                                    
+
                                     <!-- Online Status Indicator -->
                                     <div class="absolute bottom-0 right-0 -translate-x-1">
                                         <div class="relative">
@@ -2236,40 +2239,40 @@ function renderProfile(user) {
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Username -->
                             <div class="text-center mb-3 relative">
                                 <div class="username-glow-wrapper">
                                     <div class="username-particles" id="profile-username-particles"></div>
-                                    <h1 class="text-xl font-bold font-['Space_Grotesk'] mb-1 username-display ${hasVipTag ? `username-glow vip-${vipType}` : 'gradient-text username-glow'}" style="${hasVipTag ? `color: ${vipTag.color};` : ''}">${user.username}</h1>
+                                    <h1 class="text-xl font-bold font-['Space_Grotesk'] mb-1 username-display ${hasTag ? `username-glow vip-${tagType}` : 'gradient-text username-glow'}" style="${hasTag ? `color: ${tagColor};` : ''}">${user.username}</h1>
                                 </div>
                             </div>
 
                             <!-- Bio -->
                             ${user.bio ? `
                             <div class="text-center mb-4">
-                                <p class="text-sm italic profile-bio ${hasVipTag ? `vip-${vipType}` : ''}" style="${hasVipTag ? `color: ${vipTag.color}; text-shadow: 0 0 10px ${vipTag.color}80;` : 'color: #9ca3af;'}">"${user.bio}"</p>
+                                <p class="text-sm italic profile-bio ${hasTag ? `vip-${tagType}` : ''}" style="${hasTag ? `color: ${tagColor}; text-shadow: 0 0 10px ${tagColor}80;` : 'color: #9ca3af;'}">"${user.bio}"</p>
                             </div>
                             ` : ''}
 
                             <!-- Birth Date -->
                             ${user.birth_date ? `
-                            <div class="text-center mb-3 text-xs ${hasVipTag ? `vip-text-${vipType}` : ''}" style="${hasVipTag ? `color: ${vipTag.color};` : 'color: #6b7280;'}">
-                                <i class="fas fa-birthday-cake mr-1 ${hasVipTag ? `vip-icon-${vipType}` : ''}" style="${hasVipTag ? `color: ${vipTag.color}; text-shadow: 0 0 10px ${vipTag.color}80;` : 'color: #a78bfa;'}"></i>
+                            <div class="text-center mb-3 text-xs ${hasTag ? `vip-text-${tagType}` : ''}" style="${hasTag ? `color: ${tagColor};` : 'color: #6b7280;'}">
+                                <i class="fas fa-birthday-cake mr-1 ${hasTag ? `vip-icon-${tagType}` : ''}" style="${hasTag ? `color: ${tagColor}; text-shadow: 0 0 10px ${tagColor}80;` : 'color: #a78bfa;'}"></i>
                                 Nascido em ${new Date(user.birth_date).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
                             </div>
                             ` : ''}
 
                             <!-- Member Since -->
-                            <div class="text-center mb-4 text-xs ${hasVipTag ? `vip-text-${vipType}` : ''}" style="${hasVipTag ? `color: ${vipTag.color};` : 'color: #6b7280;'}">
-                                <i class="fas fa-calendar-alt mr-1 ${hasVipTag ? `vip-icon-${vipType}` : ''}" style="${hasVipTag ? `color: ${vipTag.color}; text-shadow: 0 0 10px ${vipTag.color}80;` : 'color: #a78bfa;'}"></i>
+                            <div class="text-center mb-4 text-xs ${hasTag ? `vip-text-${tagType}` : ''}" style="${hasTag ? `color: ${tagColor};` : 'color: #6b7280;'}">
+                                <i class="fas fa-calendar-alt mr-1 ${hasTag ? `vip-icon-${tagType}` : ''}" style="${hasTag ? `color: ${tagColor}; text-shadow: 0 0 10px ${tagColor}80;` : 'color: #a78bfa;'}"></i>
                                 Membro desde ${new Date(user.created_at).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
                             </div>
 
                             <!-- VIP Tags with Special Effects -->
                             ${userTags && userTags.length > 0 ? `
                             <div class="profile-tags">
-                                <h3 class="text-xs font-semibold mb-2 uppercase tracking-wider ${hasVipTag ? `vip-text-${vipType}` : ''}" style="${hasVipTag ? `color: ${vipTag.color}; text-shadow: 0 0 10px ${vipTag.color}80;` : 'color: #9ca3af;'}">Tags</h3>
+                                <h3 class="text-xs font-semibold mb-2 uppercase tracking-wider ${hasTag ? `vip-text-${tagType}` : ''}" style="${hasTag ? `color: ${tagColor}; text-shadow: 0 0 10px ${tagColor}80;` : 'color: #9ca3af;'}">Tags</h3>
                                 <div class="flex flex-wrap gap-2 justify-center">
                                     ${userTags.map((tag, index) => {
                                         const isVip = tag.name.toLowerCase().includes('vip');
@@ -2296,18 +2299,18 @@ function renderProfile(user) {
                         <div class="px-4 pb-4 pt-3 border-t border-gray-700/50">
                             <div class="grid grid-cols-2 gap-2 text-center">
                                 <div class="profile-stat-item">
-                                    <div class="text-lg font-bold stat-number ${hasVipTag ? `vip-stat-${vipType}` : 'gradient-text'}" style="${hasVipTag ? `color: ${vipTag.color}; text-shadow: 0 0 15px ${vipTag.color}80, 0 0 30px ${vipTag.color}60;` : ''}">${user.saves_count || 0}</div>
-                                    <div class="text-gray-400 text-xs">Saves</div>
+                                    <div class="text-lg font-bold stat-number ${hasTag ? `vip-stat-${tagType}` : 'gradient-text'}" style="${hasTag ? `color: ${tagColor}; text-shadow: 0 0 15px ${tagColor}80, 0 0 30px ${tagColor}60;` : ''}">${user.saves_count || 0}</div>
+                                    <div class="text-xs ${hasTag ? `vip-text-${tagType}` : ''}" style="${hasTag ? `color: ${tagColor}; text-shadow: 0 0 10px ${tagColor}60;` : 'color: #9ca3af;'}">Saves</div>
                                 </div>
                                 <div class="profile-stat-item">
-                                    <div class="text-lg font-bold stat-number ${hasVipTag ? `vip-stat-${vipType}` : 'gradient-text'}" style="${hasVipTag ? `color: ${vipTag.color}; text-shadow: 0 0 15px ${vipTag.color}80, 0 0 30px ${vipTag.color}60;` : ''}">${user.favorites_count || 0}</div>
-                                    <div class="text-gray-400 text-xs">Favoritos</div>
+                                    <div class="text-lg font-bold stat-number ${hasTag ? `vip-stat-${tagType}` : 'gradient-text'}" style="${hasTag ? `color: ${tagColor}; text-shadow: 0 0 15px ${tagColor}80, 0 0 30px ${tagColor}60;` : ''}">${user.favorites_count || 0}</div>
+                                    <div class="text-xs ${hasTag ? `vip-text-${tagType}` : ''}" style="${hasTag ? `color: ${tagColor}; text-shadow: 0 0 10px ${tagColor}60;` : 'color: #9ca3af;'}">Favoritos</div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Main Content Area (Right Side) -->
                 <div class="lg:col-span-3">
                     <div class="glass-card p-4">
@@ -2337,8 +2340,8 @@ function renderProfile(user) {
     // Create mini particles for profile card
     createProfileParticles();
 
-    // Create username particles with user's VIP type
-    createUsernameParticles(vipType);
+    // Create username particles with user's tag type
+    createUsernameParticles(tagType);
 
     // Create comment username particles
     createCommentUsernameParticles();
@@ -2354,20 +2357,22 @@ function renderUserProfile(user) {
     const isOnline = user.is_online === 1;
     const lastSeenText = isOnline ? 'Online agora' : getLastSeenText(user.last_seen);
 
-    // Check if user has VIP tag - support both tags and user_tags
+    // Check if user has any tag - use first tag for styling
     const userTags = user.tags || user.user_tags || [];
-    const hasVipTag = userTags && userTags.some(tag => tag.name.toLowerCase().includes('vip'));
-    const vipTag = hasVipTag ? userTags.find(tag => tag.name.toLowerCase().includes('vip')) : null;
-    const vipType = vipTag ? (vipTag.name.includes('Gold') ? 'gold' : vipTag.name.includes('Diamond') ? 'diamond' : vipTag.name.includes('EXTREME') ? 'extreme' : 'platinum') : '';
+    const hasTag = userTags && userTags.length > 0;
+    const mainTag = hasTag ? userTags[0] : null; // Use first tag for styling
+    const tagColor = mainTag ? mainTag.color : null;
+    const tagName = mainTag ? mainTag.name.toLowerCase() : '';
+    const tagType = tagName.includes('Gold') ? 'gold' : tagName.includes('Diamond') ? 'diamond' : tagName.includes('EXTREME') ? 'extreme' : tagName.includes('Ruby') ? 'ruby' : tagName.includes('Platinum') ? 'platinum' : 'standard';
 
     container.innerHTML = `
         <div class="profile-container">
             <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
                 <!-- Discord-style Profile Card (Left Sidebar) -->
                 <div class="lg:col-span-1">
-                    <div class="discord-profile-card glass-card overflow-hidden ${hasVipTag ? `vip-${vipType}` : ''}" id="profile-card" style="${hasVipTag ? `border-color: ${vipTag.color}; box-shadow: 0 10px 30px ${vipTag.color}30;` : ''}">
+                    <div class="discord-profile-card glass-card overflow-hidden ${hasTag ? `vip-${tagType}` : ''}" id="profile-card" style="${hasTag ? `border-color: ${tagColor}; box-shadow: 0 10px 30px ${tagColor}30;` : ''}">
                         <!-- Banner -->
-                        <div class="profile-banner h-24 relative ${hasVipTag ? `vip-${vipType}` : ''}">
+                        <div class="profile-banner h-24 relative ${hasTag ? `vip-${tagType}` : ''}">
                             <div class="particles-mini" id="profile-particles"></div>
                             <!-- Status Badge (Top Right) -->
                             <div class="absolute top-2 right-2">
@@ -2377,14 +2382,15 @@ function renderUserProfile(user) {
                                 </div>
                             </div>
                         </div>
-                        
+
                         <!-- Avatar Section -->
                         <div class="px-4 pb-4 relative">
                             <div class="relative -mt-12 mb-3">
-                                <div class="absolute inset-0 bg-gradient-to-r from-purple-500 to-cyan-500 rounded-full blur-xl opacity-50 profile-avatar-glow ${hasVipTag ? `vip-${vipType}` : ''}"></div>
+                                <div class="absolute inset-0 bg-gradient-to-r from-purple-500 to-cyan-500 rounded-full blur-xl opacity-50 profile-avatar-glow ${hasTag ? `vip-${tagType}` : ''}" style="${hasTag ? `background: linear-gradient(to right, ${tagColor}, ${tagColor});` : ''}"></div>
                                 <img src="${user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username)}&background=8b5cf6&color=fff&size=200&bold=true`}" alt="${user.username}"
-                                     class="relative w-24 h-24 rounded-full object-cover border-4 border-gray-900 profile-avatar ${hasVipTag ? `vip-${vipType}` : ''}">
-                                
+                                     class="relative w-24 h-24 rounded-full object-cover border-4 border-gray-900 profile-avatar ${hasTag ? `vip-${tagType}` : ''}"
+                                     style="${hasTag ? `border-color: ${tagColor}; box-shadow: 0 0 20px ${tagColor}60;` : ''}">
+
                                 <!-- Online Status Indicator -->
                                 <div class="absolute bottom-0 right-0">
                                     <div class="relative">
@@ -2392,40 +2398,40 @@ function renderUserProfile(user) {
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Username -->
                             <div class="text-center mb-3 relative">
                                 <div class="username-glow-wrapper">
                                     <div class="username-particles" id="profile-username-particles"></div>
-                                    <h1 class="text-xl font-bold font-['Space_Grotesk'] mb-1 username-display ${hasVipTag ? `username-glow vip-${vipType}` : 'gradient-text username-glow'}" style="${hasVipTag ? `color: ${vipTag.color};` : ''}">${user.username}</h1>
+                                    <h1 class="text-xl font-bold font-['Space_Grotesk'] mb-1 username-display ${hasTag ? `username-glow vip-${tagType}` : 'gradient-text username-glow'}" style="${hasTag ? `color: ${tagColor};` : ''}">${user.username}</h1>
                                 </div>
                             </div>
 
                             <!-- Bio -->
                             ${user.bio ? `
                             <div class="text-center mb-4">
-                                <p class="text-sm italic profile-bio ${hasVipTag ? `vip-${vipType}` : ''}" style="${hasVipTag ? `color: ${vipTag.color}; text-shadow: 0 0 10px ${vipTag.color}80;` : 'color: #9ca3af;'}">"${user.bio}"</p>
+                                <p class="text-sm italic profile-bio ${hasTag ? `vip-${tagType}` : ''}" style="${hasTag ? `color: ${tagColor}; text-shadow: 0 0 10px ${tagColor}80;` : 'color: #9ca3af;'}">"${user.bio}"</p>
                             </div>
                             ` : ''}
 
                             <!-- Birth Date -->
                             ${user.birth_date ? `
-                            <div class="text-center mb-3 text-xs ${hasVipTag ? `vip-text-${vipType}` : ''}" style="${hasVipTag ? `color: ${vipTag.color};` : 'color: #6b7280;'}">
-                                <i class="fas fa-birthday-cake mr-1 ${hasVipTag ? `vip-icon-${vipType}` : ''}" style="${hasVipTag ? `color: ${vipTag.color}; text-shadow: 0 0 10px ${vipTag.color}80;` : 'color: #a78bfa;'}"></i>
+                            <div class="text-center mb-3 text-xs ${hasTag ? `vip-text-${tagType}` : ''}" style="${hasTag ? `color: ${tagColor};` : 'color: #6b7280;'}">
+                                <i class="fas fa-birthday-cake mr-1 ${hasTag ? `vip-icon-${tagType}` : ''}" style="${hasTag ? `color: ${tagColor}; text-shadow: 0 0 10px ${tagColor}80;` : 'color: #a78bfa;'}"></i>
                                 Nascido em ${new Date(user.birth_date).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
                             </div>
                             ` : ''}
 
                             <!-- Member Since -->
-                            <div class="text-center mb-4 text-xs ${hasVipTag ? `vip-text-${vipType}` : ''}" style="${hasVipTag ? `color: ${vipTag.color};` : 'color: #6b7280;'}">
-                                <i class="fas fa-calendar-alt mr-1 ${hasVipTag ? `vip-icon-${vipType}` : ''}" style="${hasVipTag ? `color: ${vipTag.color}; text-shadow: 0 0 10px ${vipTag.color}80;` : 'color: #a78bfa;'}"></i>
+                            <div class="text-center mb-4 text-xs ${hasTag ? `vip-text-${tagType}` : ''}" style="${hasTag ? `color: ${tagColor};` : 'color: #6b7280;'}">
+                                <i class="fas fa-calendar-alt mr-1 ${hasTag ? `vip-icon-${tagType}` : ''}" style="${hasTag ? `color: ${tagColor}; text-shadow: 0 0 10px ${tagColor}80;` : 'color: #a78bfa;'}"></i>
                                 Membro desde ${new Date(user.created_at).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
                             </div>
 
                             <!-- VIP Tags with Special Effects -->
                             ${userTags && userTags.length > 0 ? `
                             <div class="profile-tags">
-                                <h3 class="text-xs font-semibold mb-2 uppercase tracking-wider ${hasVipTag ? `vip-text-${vipType}` : ''}" style="${hasVipTag ? `color: ${vipTag.color}; text-shadow: 0 0 10px ${vipTag.color}80;` : 'color: #9ca3af;'}">Tags</h3>
+                                <h3 class="text-xs font-semibold mb-2 uppercase tracking-wider ${hasTag ? `vip-text-${tagType}` : ''}" style="${hasTag ? `color: ${tagColor}; text-shadow: 0 0 10px ${tagColor}80;` : 'color: #9ca3af;'}">Tags</h3>
                                 <div class="flex flex-wrap gap-2 justify-center">
                                     ${userTags.map((tag, index) => {
                                         const isVip = tag.name.toLowerCase().includes('vip');
@@ -2452,18 +2458,18 @@ function renderUserProfile(user) {
                         <div class="px-4 pb-4 pt-3 border-t border-gray-700/50">
                             <div class="grid grid-cols-2 gap-2 text-center">
                                 <div class="profile-stat-item">
-                                    <div class="text-lg font-bold stat-number ${hasVipTag ? `vip-stat-${vipType}` : 'gradient-text'}" style="${hasVipTag ? `color: ${vipTag.color}; text-shadow: 0 0 15px ${vipTag.color}80, 0 0 30px ${vipTag.color}60;` : ''}">${user.saves_count || 0}</div>
-                                    <div class="text-gray-400 text-xs">Saves</div>
+                                    <div class="text-lg font-bold stat-number ${hasTag ? `vip-stat-${tagType}` : 'gradient-text'}" style="${hasTag ? `color: ${tagColor}; text-shadow: 0 0 15px ${tagColor}80, 0 0 30px ${tagColor}60;` : ''}">${user.saves_count || 0}</div>
+                                    <div class="text-xs ${hasTag ? `vip-text-${tagType}` : ''}" style="${hasTag ? `color: ${tagColor}; text-shadow: 0 0 10px ${tagColor}60;` : 'color: #9ca3af;'}">Saves</div>
                                 </div>
                                 <div class="profile-stat-item">
-                                    <div class="text-lg font-bold stat-number ${hasVipTag ? `vip-stat-${vipType}` : 'gradient-text'}" style="${hasVipTag ? `color: ${vipTag.color}; text-shadow: 0 0 15px ${vipTag.color}80, 0 0 30px ${vipTag.color}60;` : ''}">${user.favorites_count || 0}</div>
-                                    <div class="text-gray-400 text-xs">Favoritos</div>
+                                    <div class="text-lg font-bold stat-number ${hasTag ? `vip-stat-${tagType}` : 'gradient-text'}" style="${hasTag ? `color: ${tagColor}; text-shadow: 0 0 15px ${tagColor}80, 0 0 30px ${tagColor}60;` : ''}">${user.favorites_count || 0}</div>
+                                    <div class="text-xs ${hasTag ? `vip-text-${tagType}` : ''}" style="${hasTag ? `color: ${tagColor}; text-shadow: 0 0 10px ${tagColor}60;` : 'color: #9ca3af;'}">Favoritos</div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Main Content Area (Right Side) -->
                 <div class="lg:col-span-3">
                     <div class="glass-card p-4">
@@ -2493,8 +2499,8 @@ function renderUserProfile(user) {
     // Create mini particles for profile card
     createProfileParticles();
 
-    // Create username particles with user's VIP type
-    createUsernameParticles(vipType);
+    // Create username particles with user's tag type
+    createUsernameParticles(tagType);
 
     // Create comment username particles
     createCommentUsernameParticles();
