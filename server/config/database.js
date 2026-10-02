@@ -99,9 +99,18 @@ if (isProduction && process.env.DATABASE_URL) {
       // Convert read_status to is_read (for backwards compatibility with old schema)
       pgSql = pgSql.replace(/\bread_status\b/g, 'is_read');
 
-      // Convert ALL double-quoted strings to single quotes (PostgreSQL compatibility)
-      // This handles "approved", "pending", etc. without needing keyword lists
-      pgSql = pgSql.replace(/"([^"]+)"/g, "'$1'");
+      // Convert double-quoted string literals ONLY (not identifiers)
+      // PostgreSQL uses double quotes for identifiers (table/column names)
+      // We only want to convert string literals like "approved" to 'approved'
+      const stringLiteralKeywords = ['approved', 'pending', 'draft', 'published', 'active', 'inactive', 'rejected', 'resolved', 'failed', 'success'];
+      pgSql = pgSql.replace(/"([^"]+)"/g, (match, content) => {
+        // If it's a known keyword, convert to single quote (string literal)
+        if (stringLiteralKeywords.includes(content)) {
+          return `'${content}'`;
+        }
+        // Otherwise, keep as double quote (identifier)
+        return match;
+      });
 
       // Handle case where params is actually the callback (no params provided)
       const actualParams = Array.isArray(params) ? params : [];
@@ -146,9 +155,18 @@ if (isProduction && process.env.DATABASE_URL) {
       // Convert read_status to is_read (for backwards compatibility with old schema)
       pgSql = pgSql.replace(/\bread_status\b/g, 'is_read');
 
-      // Convert ALL double-quoted strings to single quotes (PostgreSQL compatibility)
-      // This handles "approved", "pending", etc. without needing keyword lists
-      pgSql = pgSql.replace(/"([^"]+)"/g, "'$1'");
+      // Convert double-quoted string literals ONLY (not identifiers)
+      // PostgreSQL uses double quotes for identifiers (table/column names)
+      // We only want to convert string literals like "approved" to 'approved'
+      const stringLiteralKeywords = ['approved', 'pending', 'draft', 'published', 'active', 'inactive', 'rejected', 'resolved', 'failed', 'success'];
+      pgSql = pgSql.replace(/"([^"]+)"/g, (match, content) => {
+        // If it's a known keyword, convert to single quote (string literal)
+        if (stringLiteralKeywords.includes(content)) {
+          return `'${content}'`;
+        }
+        // Otherwise, keep as double quote (identifier)
+        return match;
+      });
 
       // Handle case where params is actually the callback (no params provided)
       const actualParams = Array.isArray(params) ? params : [];

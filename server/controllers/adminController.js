@@ -46,7 +46,7 @@ const adminController = {
         UNION ALL
 
         SELECT 'username_change' as type, al.id, al.description as title, al.user_id as save_id, al.created_at, u.username, al.new_value as save_title
-        FROM activity_log al
+        FROM activity_logs al
         JOIN users u ON al.user_id = u.id
         WHERE al.action_type = 'username_change'
         ORDER BY al.created_at DESC
