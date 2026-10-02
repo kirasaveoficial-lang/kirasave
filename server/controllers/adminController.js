@@ -1,6 +1,8 @@
 const db = require('../config/database');
 const path = require('path');
 const fs = require('fs');
+const https = require('https');
+const http = require('http');
 
 const adminController = {
   getDashboardStats: (req, res) => {
@@ -159,7 +161,45 @@ const adminController = {
       // Check if file_path is a Cloudinary URL
       if (save.file_path.startsWith('http')) {
         console.log('Download from Cloudinary URL:', save.file_path);
-        res.redirect(save.file_path);
+
+        // Stream the file from Cloudinary to the user
+        const url = new URL(save.file_path);
+        const protocol = url.protocol === 'https:' ? https : http;
+
+        console.log('Streaming file from Cloudinary...');
+
+        protocol.get(save.file_path, (cloudRes) => {
+          console.log('Cloudinary response status:', cloudRes.statusCode);
+
+          if (cloudRes.statusCode !== 200) {
+            console.error('Cloudinary returned non-200 status:', cloudRes.statusCode);
+            return res.status(500).json({ error: 'Failed to download from Cloudinary' });
+          }
+
+          // Set headers for download
+          res.setHeader('Content-Type', cloudRes.headers['content-type'] || 'application/octet-stream');
+          res.setHeader('Content-Disposition', `attachment; filename="save-${saveId}.rar"`);
+          res.setHeader('Content-Length', cloudRes.headers['content-length']);
+
+          // Pipe the stream to the response
+          cloudRes.pipe(res);
+
+          cloudRes.on('error', (err) => {
+            console.error('Cloudinary stream error:', err);
+            if (!res.headersSent) {
+              res.status(500).json({ error: 'Download stream error' });
+            }
+          });
+
+          cloudRes.on('end', () => {
+            console.log('Cloudinary download completed successfully');
+          });
+        }).on('error', (err) => {
+          console.error('Cloudinary request error:', err);
+          if (!res.headersSent) {
+            res.status(500).json({ error: 'Failed to connect to Cloudinary' });
+          }
+        });
       } else {
         // Use local filesystem
         const filePath = path.join(__dirname, '../../public/uploads/saves/', save.file_path);

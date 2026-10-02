@@ -4,7 +4,8 @@ const { uploadAvatarCloudinary } = require('../middleware/uploadCloudinary');
 
 // Use Cloudinary in production, local filesystem in development
 const isProduction = process.env.NODE_ENV === 'production';
-const useCloudinary = isProduction && process.env.CLOUDINARY_CLOUD_NAME;
+// In production, always try to use Cloudinary if credentials are set
+const useCloudinary = isProduction && (process.env.CLOUDINARY_CLOUD_NAME || process.env.CLOUDINARY_API_KEY);
 
 const userController = {
   getUserProfile: (req, res) => {
