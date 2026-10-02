@@ -175,13 +175,18 @@ const authController = {
             if (err) stats = { saves_count: 0, favorites_count: 0 };
 
             // Get user's tags
-            db.all(
-              `SELECT t.*, ut.assigned_at, ut.assigned_by,
+            const tagsQuery = `SELECT t.*, ut.assigned_at, ut.assigned_by,
                 (SELECT username FROM users WHERE id = ut.assigned_by) as assigned_by_username
               FROM tags t
               JOIN user_tags ut ON t.id = ut.tag_id
               WHERE ut.user_id = ?
-              ORDER BY ut.assigned_at DESC`,
+              ORDER BY ut.assigned_at DESC`;
+            
+            console.log('Fetching tags for user:', req.user.id);
+            console.log('Tags query:', tagsQuery);
+
+            db.all(
+              tagsQuery,
               [req.user.id],
               (err, tags) => {
                 if (err) {
@@ -190,6 +195,7 @@ const authController = {
                 }
 
                 console.log('User tags returned:', tags);
+                console.log('Number of tags:', tags.length);
 
                 res.json({
                   ...user,
@@ -380,11 +386,16 @@ const authController = {
         }
 
         // Get user tags
+        console.log('Fetching tags for user profile:', userId);
         db.all(
           'SELECT t.* FROM tags t JOIN user_tags ut ON t.id = ut.tag_id WHERE ut.user_id = ?',
           [userId],
           (err, tags) => {
-            if (err) tags = [];
+            if (err) {
+              console.error('Failed to fetch user tags in getUserProfile:', err);
+              tags = [];
+            }
+            console.log('User profile tags returned:', tags);
 
             // Get user stats
             db.get(
