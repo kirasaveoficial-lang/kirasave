@@ -244,9 +244,11 @@ async function initializePostgreSQLTables() {
       await pool.query(sql);
     }
 
+    console.log('PostgreSQL tables created/verified successfully');
+
+    // Run migrations (add missing columns, rename columns, etc.)
     // Fix notifications table column name if needed (read_status -> is_read)
     try {
-      // Check if column exists first
       const checkColumn = await pool.query(`
         SELECT column_name
         FROM information_schema.columns
@@ -284,7 +286,7 @@ async function initializePostgreSQLTables() {
         console.log('user_tags table already has assigned_by column');
       }
     } catch (err) {
-      console.log('assigned_by column check error (might be OK):', err.message);
+      console.log('assigned_by column check/add error:', err.message);
     }
 
     console.log('PostgreSQL tables initialized successfully');
@@ -296,4 +298,14 @@ async function initializePostgreSQLTables() {
   }
 }
 
-initializePostgreSQLTables();
+// Only run if this file is executed directly (not required)
+if (require.main === module) {
+  initializePostgreSQLTables();
+}
+
+module.exports = initializePostgreSQLTables;
+if (require.main === module) {
+  initializePostgreSQLTables();
+}
+
+module.exports = initializePostgreSQLTables;

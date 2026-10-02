@@ -8,6 +8,7 @@
     "dev": "nodemon server.js",
     "seed": "node server/utils/seed.js",
     "init-postgres": "node server/utils/initPostgres.js",
+    "migrate": "node server/utils/migrate.js",
     "promote-admin": "node server/utils/promoteAdmin.js",
     "list-users": "node server/utils/listUsers.js"
   },
