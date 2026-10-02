@@ -162,8 +162,10 @@ async function initializePostgreSQLTables() {
         user_id INTEGER NOT NULL,
         tag_id INTEGER NOT NULL,
         assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        assigned_by INTEGER,
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
         FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE,
+        FOREIGN KEY (assigned_by) REFERENCES users(id) ON DELETE SET NULL,
         UNIQUE(user_id, tag_id)
       )`,
 
@@ -262,6 +264,27 @@ async function initializePostgreSQLTables() {
       }
     } catch (err) {
       console.log('Column rename check error (might be OK):', err.message);
+    }
+
+    // Add assigned_by column to user_tags if missing
+    try {
+      const checkAssignedBy = await pool.query(`
+        SELECT column_name
+        FROM information_schema.columns
+        WHERE table_name = 'user_tags' AND column_name = 'assigned_by'
+      `);
+
+      if (checkAssignedBy.rows.length === 0) {
+        await pool.query(`
+          ALTER TABLE user_tags
+          ADD COLUMN assigned_by INTEGER REFERENCES users(id) ON DELETE SET NULL
+        `);
+        console.log('Added assigned_by column to user_tags table');
+      } else {
+        console.log('user_tags table already has assigned_by column');
+      }
+    } catch (err) {
+      console.log('assigned_by column check error (might be OK):', err.message);
     }
 
     console.log('PostgreSQL tables initialized successfully');
