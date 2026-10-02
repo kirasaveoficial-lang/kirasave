@@ -98,7 +98,7 @@ function setupNavigation() {
                     <img src="${state.user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(state.user.username)}&background=8b5cf6&color=fff&size=200&bold=true`}" alt="Avatar" class="avatar group-hover:ring-2 transition-all" style="${state.user.tagColor ? `border-color: ${state.user.tagColor}; --hover-ring-color: ${state.user.tagColor};` : ''}" ${state.user.tagColor ? `onmouseover="this.style.boxShadow='0 0 0 2px var(--hover-ring-color)'" onmouseout="this.style.boxShadow=''"` : ''}>
                     <div class="username-glow-wrapper">
                         <div class="username-particles" id="header-username-particles"></div>
-                        <span class="username-glow ${state.user.tagType ? `vip-${state.user.tagType}` : ''}" style="${state.user.tagColor ? `color: ${state.user.tagColor};` : ''}">${state.user.username}</span>
+                        <span class="username-glow ${state.user.tagType ? `vip-${state.user.tagType}` : ''}" style="${state.user.tagColor ? `color: ${state.user.tagColor}; text-shadow: 0 0 10px ${state.user.tagColor}80, 0 0 20px ${state.user.tagColor}60, 0 0 30px ${state.user.tagColor}40;` : ''}">${state.user.username}</span>
                     </div>
                     <i class="fas fa-chevron-down text-xs transition-transform group-hover:rotate-180"></i>
                 </button>
@@ -2265,7 +2265,7 @@ function renderProfile(user) {
                             <div class="text-center mb-3 relative">
                                 <div class="username-glow-wrapper">
                                     <div class="username-particles" id="profile-username-particles"></div>
-                                    <h1 class="text-xl font-bold font-['Space_Grotesk'] mb-1 username-display ${hasTag ? `username-glow vip-${tagType}` : 'gradient-text username-glow'}" style="${hasTag ? `color: ${tagColor};` : ''}">${user.username}</h1>
+                                    <h1 class="text-xl font-bold font-['Space_Grotesk'] mb-1 username-display ${hasTag ? `username-glow vip-${tagType}` : 'gradient-text username-glow'}" style="${hasTag ? `color: ${tagColor}; text-shadow: 0 0 10px ${tagColor}80, 0 0 20px ${tagColor}60, 0 0 30px ${tagColor}40;` : ''}">${user.username}</h1>
                                 </div>
                             </div>
 
@@ -2425,7 +2425,7 @@ function renderUserProfile(user) {
                             <div class="text-center mb-3 relative">
                                 <div class="username-glow-wrapper">
                                     <div class="username-particles" id="profile-username-particles"></div>
-                                    <h1 class="text-xl font-bold font-['Space_Grotesk'] mb-1 username-display ${hasTag ? `username-glow vip-${tagType}` : 'gradient-text username-glow'}" style="${hasTag ? `color: ${tagColor};` : ''}">${user.username}</h1>
+                                    <h1 class="text-xl font-bold font-['Space_Grotesk'] mb-1 username-display ${hasTag ? `username-glow vip-${tagType}` : 'gradient-text username-glow'}" style="${hasTag ? `color: ${tagColor}; text-shadow: 0 0 10px ${tagColor}80, 0 0 20px ${tagColor}60, 0 0 30px ${tagColor}40;` : ''}">${user.username}</h1>
                                 </div>
                             </div>
 
