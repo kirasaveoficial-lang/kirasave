@@ -3394,16 +3394,9 @@ function renderPagination(pagination) {
 
 async function downloadSave(id) {
     try {
-        const headers = {};
-        if (state.token) {
-            headers['Authorization'] = `Bearer ${state.token}`;
-        }
-
-        // Ensure id is a number and convert to string
         const saveId = parseInt(id);
         console.log('=== DOWNLOAD REQUEST START ===');
         console.log('Save ID (parsed):', saveId, '(original:', id, ')');
-        console.log('Has token:', !!state.token);
 
         if (isNaN(saveId)) {
             console.error('Invalid save ID:', id);
@@ -3411,44 +3404,39 @@ async function downloadSave(id) {
             return;
         }
 
-        const response = await fetch(`${API_BASE}/saves/${saveId}/download`, {
-            method: 'GET',
-            headers
-        });
+        // Open the download endpoint in a new tab - browser will follow the redirect
+        const downloadUrl = `${API_BASE}/saves/${saveId}/download`;
+        console.log('Opening download URL:', downloadUrl);
 
-        console.log('Download response status:', response.status);
-        console.log('Download response headers:', Object.fromEntries(response.headers.entries()));
+        // If logged in, need to pass token
+        if (state.token) {
+            // Use fetch to trigger the download with auth, then handle redirect
+            const response = await fetch(`${API_BASE}/saves/${saveId}/download`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${state.token}`
+                }
+            });
 
-        if (!response.ok) {
-            const error = await response.json();
-            console.error('Download error:', error);
-            throw new Error(error.error || 'Download failed');
+            console.log('Download response status:', response.status);
+
+            if (!response.ok) {
+                const error = await response.json();
+                console.error('Download error:', error);
+                throw new Error(error.error || 'Download failed');
+            }
+
+            // The response should be a redirect, open the final URL
+            const finalUrl = response.url || response.headers.get('Location') || downloadUrl;
+            console.log('Opening final URL:', finalUrl);
+            window.open(finalUrl, '_blank');
+        } else {
+            // Not logged in, open directly
+            window.open(downloadUrl, '_blank');
         }
-
-        // Get the blob from response
-        const blob = await response.blob();
-        console.log('Download blob size:', blob.size);
-        console.log('Download blob type:', blob.type);
-
-        if (blob.size === 0) {
-            console.error('Download blob is empty!');
-            throw new Error('Arquivo vazio recebido do servidor');
-        }
-
-        // Create download link
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `save-${saveId}.rar`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
 
         console.log('Download initiated successfully');
-        showToast('Download iniciado!', 'success');
-        
-        showToast('Download iniciado!', 'success');
+        showToast('Redirecionando para download...', 'success');
     } catch (error) {
         console.error('Download error:', error);
         showToast(error.message || 'Erro ao baixar save', 'error');
@@ -4250,25 +4238,13 @@ async function downloadPendingSave(id) {
             throw new Error(error.error || 'Download failed');
         }
 
-        const blob = await response.blob();
-        console.log('Admin download blob size:', blob.size);
-
-        if (blob.size === 0) {
-            console.error('Admin download blob is empty!');
-            throw new Error('Arquivo vazio recebido do servidor');
-        }
-
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `save-${saveId}.rar`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
+        // The response should be a redirect, open the final URL
+        const finalUrl = response.url || response.headers.get('Location') || `${API_BASE}/admin/saves/${saveId}/download`;
+        console.log('Opening final URL:', finalUrl);
+        window.open(finalUrl, '_blank');
 
         console.log('Admin download initiated successfully');
-        showToast('Download iniciado!', 'success');
+        showToast('Redirecionando para download...', 'success');
     } catch (error) {
         console.error('Admin download error:', error);
         showToast('Erro ao baixar arquivo', 'error');
