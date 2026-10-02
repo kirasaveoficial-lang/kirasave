@@ -1798,7 +1798,7 @@ function renderSaveCards(saves, containerId) {
         <div class="save-card p-4 rounded-lg cursor-pointer" onclick="window.location.href='/saves/${save.id}'">
             <!-- Thumbnail -->
             <div class="w-full h-32 rounded-lg overflow-hidden mb-3 bg-gray-800">
-                <img src="${save.thumbnail || save.game_cover || '/save.game_cover'}" alt="${save.title}" class="w-full h-full object-cover">
+                <img src="${save.thumbnail || save.game_cover || '/images/default-game-cover.jpg'}" alt="${save.title}" class="w-full h-full object-cover" onerror="this.src='/images/default-game-cover.jpg'">
             </div>
 
             <!-- Tags -->
@@ -1816,11 +1816,11 @@ function renderSaveCards(saves, containerId) {
             <div class="flex items-center gap-4 text-white/90 text-sm mb-2">
                 <span class="flex items-center">
                     <i class="fas fa-star text-yellow-400 mr-1"></i>
-                    ${save.rating_avg.toFixed(1)}
+                    ${typeof save.rating_avg === 'number' ? save.rating_avg.toFixed(1) : '0.0'}
                 </span>
                 <span class="flex items-center">
                     <i class="fas fa-download text-white mr-1"></i>
-                    ${save.download_count}
+                    ${save.download_count || 0}
                 </span>
                 <span class="flex items-center">
                     <i class="fas fa-heart text-red-400 mr-1"></i>
@@ -1899,11 +1899,11 @@ function renderProfileSaveCards(saves, containerId, isOwnProfile = false) {
                             <div class="flex items-center gap-2">
                                 <span class="flex items-center text-yellow-400">
                                     <i class="fas fa-star mr-0.5 text-[8px]"></i>
-                                    ${save.rating_avg.toFixed(1)}
+                                    ${typeof save.rating_avg === 'number' ? save.rating_avg.toFixed(1) : '0.0'}
                                 </span>
                                 <span class="flex items-center text-gray-400">
                                     <i class="fas fa-download mr-0.5 text-[8px]"></i>
-                                    ${save.download_count}
+                                    ${save.download_count || 0}
                                 </span>
                             </div>
                         </div>
@@ -2012,9 +2012,9 @@ function renderSaveDetails(save) {
                     <p class="text-gray-300 text-sm mb-3">${save.description || 'Sem descrição'}</p>
 
                     <div class="flex items-center gap-3 mb-3 text-xs">
-                        <span><i class="fas fa-download mr-1 text-purple-400"></i> ${save.download_count}</span>
-                        <span><i class="fas fa-eye mr-1 text-cyan-400"></i> ${save.view_count}</span>
-                        <span><i class="fas fa-star mr-1 text-yellow-400"></i> ${save.rating_avg.toFixed(1)} (${save.rating_count})</span>
+                        <span><i class="fas fa-download mr-1 text-purple-400"></i> ${save.download_count || 0}</span>
+                        <span><i class="fas fa-eye mr-1 text-cyan-400"></i> ${save.view_count || 0}</span>
+                        <span><i class="fas fa-star mr-1 text-yellow-400"></i> ${typeof save.rating_avg === 'number' ? save.rating_avg.toFixed(1) : '0.0'} (${save.rating_count || 0})</span>
                     </div>
 
                     ${state.user ? `
@@ -2149,7 +2149,7 @@ function renderSaveDetails(save) {
                         </div>
                         <div class="flex justify-between">
                             <span class="text-gray-400">Avaliação</span>
-                            <span class="font-semibold">${save.rating_avg.toFixed(1)}/5</span>
+                            <span class="font-semibold">${typeof save.rating_avg === 'number' ? save.rating_avg.toFixed(1) : '0.0'}/5</span>
                         </div>
                     </div>
                 </div>
