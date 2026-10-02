@@ -2072,7 +2072,7 @@ function renderSaveDetails(save) {
                     ${state.user ? `
                         <form onsubmit="addComment(event, ${save.id})" class="mb-4 comment-form">
                             <div class="flex gap-3">
-                                <img src="${state.user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(state.user.username)}&background=8b5cf6&color=fff&size=200&bold=true`}" alt="${state.user.username}" class="avatar w-10 h-10">
+                                <img src="${state.user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(state.user.username)}&background=8b5cf6&color=fff&size=200&bold=true`}" alt="${state.user.username}" class="avatar w-10 h-10" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(state.user.username)}&background=8b5cf6&color=fff&size=200&bold=true'">
                                 <div class="flex-1">
                                     <textarea name="content" rows="3" class="input-field mb-2 text-sm" placeholder="Escreva um comentário..." required></textarea>
                                     <div class="flex justify-end">
@@ -2104,7 +2104,7 @@ function renderSaveDetails(save) {
                     <h3 class="font-bold mb-3 text-sm">Autor</h3>
                     <div class="flex items-center gap-3 mb-3">
                         <div class="relative">
-                            <img src="${save.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(save.username)}&background=8b5cf6&color=fff&size=200&bold=true`}" alt="${save.username}" class="avatar w-12 h-12 ${hasVipTag ? `vip-${vipType}` : ''}">
+                            <img src="${save.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(save.username)}&background=8b5cf6&color=fff&size=200&bold=true`}" alt="${save.username}" class="avatar w-12 h-12 ${hasVipTag ? `vip-${vipType}` : ''}" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(save.username)}&background=8b5cf6&color=fff&size=200&bold=true'">
                             <div class="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-gray-800 ${isOnline ? 'bg-green-500' : 'bg-gray-500'}"></div>
                         </div>
                         <div>
@@ -2122,7 +2122,7 @@ function renderSaveDetails(save) {
                                 const tagVipType = isVip ? (tag.name.includes('Gold') ? 'gold' : tag.name.includes('Diamond') ? 'diamond' : tag.name.includes('EXTREME') ? 'extreme' : 'platinum') : '';
                                 return `
                                 <span class="text-xs px-2 py-1 rounded-full cursor-help tag-badge-animated ${isVip ? `vip-tag-${tagVipType}` : ''}"
-                                      style="background: linear-gradient(135deg, ${tag.color}40, ${tag.color}20); color: ${tag.color}; border: 1px solid ${tag.color}60;"
+                                      style="background: ${tag.color}; color: #fff; border: 1px solid ${tag.color}; box-shadow: 0 0 10px ${tag.color}60;"
                                       title="${tag.description || ''}">
                                     <i class="fas fa-${tag.icon || 'tag'} mr-1"></i>${tag.name}
                                 </span>
