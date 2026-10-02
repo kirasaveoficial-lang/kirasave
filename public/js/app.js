@@ -2297,15 +2297,16 @@ function renderProfile(user) {
                                 <div class="flex flex-wrap gap-2 justify-center">
                                     ${userTags.map((tag, index) => {
                                         const isVip = tag.name.toLowerCase().includes('vip');
-                                        const tagVipType = isVip ? (tag.name.includes('Gold') ? 'gold' : tag.name.includes('Diamond') ? 'diamond' : tag.name.includes('EXTREME') ? 'extreme' : 'platinum') : '';
+                                        const tagVipType = isVip ? (tag.name.includes('Gold') ? 'gold' : tag.name.includes('Diamond') ? 'diamond' : tag.name.includes('EXTREME') ? 'extreme' : tag.name.includes('Ruby') ? 'ruby' : 'platinum') : '';
                                         return `
                                         <span class="tag-badge-animated px-3 py-1.5 rounded-full text-xs font-medium cursor-pointer ${isVip ? `vip-tag-${tagVipType}` : ''}"
-                                              style="background: linear-gradient(135deg, ${tag.color}40, ${tag.color}20); color: ${tag.color}; border: 1px solid ${tag.color}60; animation-delay: ${index * 0.1}s;"
+                                              style="background: ${tag.color}; color: #fff; border: 1px solid ${tag.color}; box-shadow: 0 0 10px ${tag.color}60; animation-delay: ${index * 0.1}s;"
                                               title="${tag.description || ''}"
                                               data-tag-id="${tag.id}"
                                               data-is-vip="${isVip}"
                                               data-vip-type="${tagVipType}"
                                               data-tag-name="${tag.name}"
+                                              data-tag-color="${tag.color}"
                                               onclick="handleTagClick(this)">
                                             <i class="fas fa-${tag.icon || 'tag'} mr-1"></i>${tag.name}
                                         </span>
@@ -2456,15 +2457,16 @@ function renderUserProfile(user) {
                                 <div class="flex flex-wrap gap-2 justify-center">
                                     ${userTags.map((tag, index) => {
                                         const isVip = tag.name.toLowerCase().includes('vip');
-                                        const tagVipType = isVip ? (tag.name.includes('Gold') ? 'gold' : tag.name.includes('Diamond') ? 'diamond' : tag.name.includes('EXTREME') ? 'extreme' : 'platinum') : '';
+                                        const tagVipType = isVip ? (tag.name.includes('Gold') ? 'gold' : tag.name.includes('Diamond') ? 'diamond' : tag.name.includes('EXTREME') ? 'extreme' : tag.name.includes('Ruby') ? 'ruby' : 'platinum') : '';
                                         return `
                                         <span class="tag-badge-animated px-3 py-1.5 rounded-full text-xs font-medium cursor-pointer ${isVip ? `vip-tag-${tagVipType}` : ''}"
-                                              style="background: linear-gradient(135deg, ${tag.color}40, ${tag.color}20); color: ${tag.color}; border: 1px solid ${tag.color}60; animation-delay: ${index * 0.1}s;"
+                                              style="background: ${tag.color}; color: #fff; border: 1px solid ${tag.color}; box-shadow: 0 0 10px ${tag.color}60; animation-delay: ${index * 0.1}s;"
                                               title="${tag.description || ''}"
                                               data-tag-id="${tag.id}"
                                               data-is-vip="${isVip}"
                                               data-vip-type="${tagVipType}"
                                               data-tag-name="${tag.name}"
+                                              data-tag-color="${tag.color}"
                                               onclick="handleTagClick(this)">
                                             <i class="fas fa-${tag.icon || 'tag'} mr-1"></i>${tag.name}
                                         </span>
