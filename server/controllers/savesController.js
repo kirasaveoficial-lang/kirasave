@@ -1,6 +1,7 @@
 const db = require('../config/database');
 const { uploadSave, uploadImages, uploadSingleImage } = require('../middleware/upload');
 const path = require('path');
+const fs = require('fs');
 
 const savesController = {
   getAllSaves: (req, res) => {
@@ -333,6 +334,12 @@ const savesController = {
       // Use full path for download
       const filePath = path.join(__dirname, '../../public/uploads/saves/', save.file_path);
       console.log('Download requested for save:', id, 'File path:', filePath);
+      console.log('File path from DB:', save.file_path);
+
+      if (!fs.existsSync(filePath)) {
+        console.error('File does not exist:', filePath);
+        return res.status(404).json({ error: 'File not found on server' });
+      }
 
       res.download(filePath, (err) => {
         if (err) {

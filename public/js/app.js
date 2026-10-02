@@ -3455,9 +3455,11 @@ async function downloadSave(id) {
             headers['Authorization'] = `Bearer ${state.token}`;
         }
 
-        console.log('Attempting to download save:', id);
+        // Ensure id is a number and convert to string
+        const saveId = parseInt(id);
+        console.log('Attempting to download save:', saveId, '(original:', id, ')');
 
-        const response = await fetch(`${API_BASE}/saves/${id}/download`, {
+        const response = await fetch(`${API_BASE}/saves/${saveId}/download`, {
             method: 'GET',
             headers
         });
@@ -3478,7 +3480,7 @@ async function downloadSave(id) {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `save-${id}.rar`;
+        a.download = `save-${saveId}.rar`;
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
