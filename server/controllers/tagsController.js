@@ -86,7 +86,8 @@ const tagsController = {
       [user_id],
       (err, tags) => {
         if (err) {
-          return res.status(500).json({ error: 'Failed to fetch user tags' });
+          console.error('Failed to fetch user tags:', err);
+          return res.status(500).json({ error: 'Failed to fetch user tags', details: err.message });
         }
         res.json(tags);
       }
