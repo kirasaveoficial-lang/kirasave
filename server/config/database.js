@@ -99,6 +99,10 @@ if (isProduction && process.env.DATABASE_URL) {
       // Convert read_status to is_read (for backwards compatibility with old schema)
       pgSql = pgSql.replace(/\bread_status\b/g, 'is_read');
 
+      // Convert ALL double-quoted strings to single quotes (PostgreSQL compatibility)
+      // This handles "approved", "pending", etc. without needing keyword lists
+      pgSql = pgSql.replace(/"([^"]+)"/g, "'$1'");
+
       // Handle case where params is actually the callback (no params provided)
       const actualParams = Array.isArray(params) ? params : [];
       const actualCallback = typeof params === 'function' ? params : callback;
@@ -141,6 +145,10 @@ if (isProduction && process.env.DATABASE_URL) {
 
       // Convert read_status to is_read (for backwards compatibility with old schema)
       pgSql = pgSql.replace(/\bread_status\b/g, 'is_read');
+
+      // Convert ALL double-quoted strings to single quotes (PostgreSQL compatibility)
+      // This handles "approved", "pending", etc. without needing keyword lists
+      pgSql = pgSql.replace(/"([^"]+)"/g, "'$1'");
 
       // Handle case where params is actually the callback (no params provided)
       const actualParams = Array.isArray(params) ? params : [];

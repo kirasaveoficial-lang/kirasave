@@ -168,8 +168,8 @@ const authController = {
         // Get user stats
         db.get(
           `SELECT
-            (SELECT COUNT(*) FROM saves WHERE user_id = ? AND status = "approved") as saves_count,
-            (SELECT COUNT(*) FROM favorites f JOIN saves s ON f.save_id = s.id WHERE s.user_id = ? AND s.status = "approved") as favorites_count`,
+            (SELECT COUNT(*) FROM saves WHERE user_id = ? AND status = 'approved') as saves_count,
+            (SELECT COUNT(*) FROM favorites f JOIN saves s ON f.save_id = s.id WHERE s.user_id = ? AND s.status = 'approved') as favorites_count`,
           [req.user.id, req.user.id],
           (err, stats) => {
             if (err) stats = { saves_count: 0, favorites_count: 0 };
