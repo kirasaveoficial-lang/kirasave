@@ -1,7 +1,12 @@
 const db = require('../config/database');
 const { uploadSave, uploadImages, uploadSingleImage } = require('../middleware/upload');
+const { uploadSaveCloudinary, uploadImagesCloudinary } = require('../middleware/uploadCloudinary');
 const path = require('path');
 const fs = require('fs');
+
+// Use Cloudinary in production, local filesystem in development
+const isProduction = process.env.NODE_ENV === 'production';
+const useCloudinary = isProduction && process.env.CLOUDINARY_CLOUD_NAME;
 
 const savesController = {
   getAllSaves: (req, res) => {
@@ -220,8 +225,12 @@ const savesController = {
     console.log('User:', req.user);
     console.log('Body keys:', Object.keys(req.body));
     console.log('Body:', req.body);
+    console.log('Using Cloudinary:', useCloudinary);
 
-    uploadSave(req, res, (err) => {
+    // Use Cloudinary middleware in production, local filesystem in development
+    const uploadMiddleware = useCloudinary ? uploadSaveCloudinary.single('file') : uploadSave.single('file');
+
+    uploadMiddleware(req, res, (err) => {
       if (err) {
         console.error('Upload error:', err);
         return res.status(400).json({ error: err.message });
@@ -244,12 +253,16 @@ const savesController = {
         return res.status(400).json({ error: 'Title, game, and platform are required' });
       }
 
+      // Store Cloudinary URL or local file path
+      const filePath = useCloudinary ? req.file.path : req.file.filename;
+
       console.log('Creating save in database...');
+      console.log('File path to store:', filePath);
 
       db.run(
         `INSERT INTO saves (title, description, file_path, user_id, game_id, platform, category, status)
          VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')`,
-        [title, description, req.file.filename, req.user.id, game_id, platform, category],
+        [title, description, filePath, req.user.id, game_id, platform, category],
         function(err) {
           if (err) {
             console.error('Database error:', err);
@@ -331,22 +344,29 @@ const savesController = {
           [id, req.ip]);
       }
 
-      // Use full path for download
-      const filePath = path.join(__dirname, '../../public/uploads/saves/', save.file_path);
-      console.log('Download requested for save:', id, 'File path:', filePath);
-      console.log('File path from DB:', save.file_path);
+      // Check if file_path is a Cloudinary URL
+      if (save.file_path.startsWith('http')) {
+        console.log('Download from Cloudinary URL:', save.file_path);
+        // Redirect to Cloudinary URL
+        res.redirect(save.file_path);
+      } else {
+        // Use local filesystem
+        const filePath = path.join(__dirname, '../../public/uploads/saves/', save.file_path);
+        console.log('Download from local filesystem:', filePath);
+        console.log('File path from DB:', save.file_path);
 
-      if (!fs.existsSync(filePath)) {
-        console.error('File does not exist:', filePath);
-        return res.status(404).json({ error: 'File not found on server' });
-      }
-
-      res.download(filePath, (err) => {
-        if (err) {
-          console.error('Download error:', err);
-          return res.status(500).json({ error: 'Failed to download file', details: err.message });
+        if (!fs.existsSync(filePath)) {
+          console.error('File does not exist:', filePath);
+          return res.status(404).json({ error: 'File not found on server' });
         }
-      });
+
+        res.download(filePath, (err) => {
+          if (err) {
+            console.error('Download error:', err);
+            return res.status(500).json({ error: 'Failed to download file', details: err.message });
+          }
+        });
+      }
     });
   },
 
