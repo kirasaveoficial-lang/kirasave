@@ -374,43 +374,63 @@ const savesController = {
       if (save.file_path.startsWith('http')) {
         console.log('Download from Cloudinary URL:', save.file_path);
 
-        // Stream the file from Cloudinary to the user
-        const url = new URL(save.file_path);
-        const protocol = url.protocol === 'https:' ? https : http;
+        // Use Cloudinary SDK to download the file
+        // Extract public_id from URL
+        const urlParts = save.file_path.split('/');
+        const filename = urlParts[urlParts.length - 1];
+        const publicId = `kira-save/saves/${filename.replace(/\.[^/.]+$/, '')}`;
 
-        console.log('Streaming file from Cloudinary...');
+        console.log('Cloudinary public_id:', publicId);
 
-        protocol.get(save.file_path, (cloudRes) => {
-          console.log('Cloudinary response status:', cloudRes.statusCode);
-
-          if (cloudRes.statusCode !== 200) {
-            console.error('Cloudinary returned non-200 status:', cloudRes.statusCode);
-            return res.status(500).json({ error: 'Failed to download from Cloudinary' });
+        // Download from Cloudinary using SDK
+        cloudinary.api.resource(publicId, { resource_type: 'auto' }, (err, result) => {
+          if (err) {
+            console.error('Cloudinary API error:', err);
+            return res.status(500).json({ error: 'Failed to fetch file from Cloudinary: ' + err.message });
           }
 
-          // Set headers for download
-          res.setHeader('Content-Type', cloudRes.headers['content-type'] || 'application/octet-stream');
-          res.setHeader('Content-Disposition', `attachment; filename="save-${saveId}.rar"`);
-          res.setHeader('Content-Length', cloudRes.headers['content-length']);
+          console.log('Cloudinary resource found:', result);
 
-          // Pipe the stream to the response
-          cloudRes.pipe(res);
+          // Get the secure URL
+          const fileUrl = result.secure_url || result.url;
+          console.log('Streaming from:', fileUrl);
 
-          cloudRes.on('error', (err) => {
-            console.error('Cloudinary stream error:', err);
+          // Stream the file using HTTP/HTTPS
+          const url = new URL(fileUrl);
+          const protocol = url.protocol === 'https:' ? https : http;
+
+          protocol.get(fileUrl, (cloudRes) => {
+            console.log('Cloudinary HTTP response status:', cloudRes.statusCode);
+
+            if (cloudRes.statusCode !== 200) {
+              console.error('Cloudinary HTTP returned non-200 status:', cloudRes.statusCode);
+              return res.status(500).json({ error: 'Failed to download from Cloudinary (HTTP error)' });
+            }
+
+            // Set headers for download
+            res.setHeader('Content-Type', cloudRes.headers['content-type'] || 'application/octet-stream');
+            res.setHeader('Content-Disposition', `attachment; filename="save-${saveId}.rar"`);
+            res.setHeader('Content-Length', cloudRes.headers['content-length']);
+
+            // Pipe the stream to the response
+            cloudRes.pipe(res);
+
+            cloudRes.on('error', (err) => {
+              console.error('Cloudinary stream error:', err);
+              if (!res.headersSent) {
+                res.status(500).json({ error: 'Download stream error' });
+              }
+            });
+
+            cloudRes.on('end', () => {
+              console.log('Cloudinary download completed successfully');
+            });
+          }).on('error', (err) => {
+            console.error('Cloudinary HTTP request error:', err);
             if (!res.headersSent) {
-              res.status(500).json({ error: 'Download stream error' });
+              res.status(500).json({ error: 'Failed to connect to Cloudinary' });
             }
           });
-
-          cloudRes.on('end', () => {
-            console.log('Cloudinary download completed successfully');
-          });
-        }).on('error', (err) => {
-          console.error('Cloudinary request error:', err);
-          if (!res.headersSent) {
-            res.status(500).json({ error: 'Failed to connect to Cloudinary' });
-          }
         });
       } else {
         // Use local filesystem
