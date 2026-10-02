@@ -669,8 +669,6 @@ function renderUploadPage() {
         </section>
     `;
 
-    // Setup file upload
-    setupFileUpload();
     // Setup game autocomplete
     setupGameAutocomplete();
     // Setup form submission
@@ -3049,55 +3047,8 @@ function populateGameDropdown() {
 }
 
 function setupFileUpload() {
-    const dropZone = document.getElementById('drop-zone');
-    const fileInput = document.getElementById('save-file');
-    const fileInfo = document.getElementById('file-info');
-    const fileName = document.getElementById('file-name');
-
-    if (!dropZone || !fileInput) return;
-
-    // Click to select file
-    dropZone.addEventListener('click', () => {
-        fileInput.click();
-    });
-
-    // Drag and drop
-    dropZone.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        dropZone.classList.add('dragover');
-    });
-
-    dropZone.addEventListener('dragleave', () => {
-        dropZone.classList.remove('dragover');
-    });
-
-    dropZone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        dropZone.classList.remove('dragover');
-        const files = e.dataTransfer.files;
-        if (files.length > 0) {
-            fileInput.files = files;
-            handleFileSelect(files[0]);
-        }
-    });
-
-    // File selection
-    fileInput.addEventListener('change', (e) => {
-        if (e.target.files.length > 0) {
-            handleFileSelect(e.target.files[0]);
-        }
-    });
-
-    function handleFileSelect(file) {
-        fileName.textContent = file.name;
-        fileInfo.classList.remove('hidden');
-        // Only update the drop-zone content, not the whole drop-zone
-        dropZone.innerHTML = `
-            <i class="fas fa-check-circle text-3xl text-green-400 mb-2"></i>
-            <p class="text-gray-300">${file.name}</p>
-            <p class="text-gray-500 text-xs mt-1">${(file.size / 1024 / 1024).toFixed(2)} MB</p>
-        `;
-    }
+    // File upload is no longer used - saves use external download links
+    console.log('File upload setup skipped - using external download links');
 }
 
 function setupGameAutocomplete() {
@@ -3181,15 +3132,9 @@ function setupUploadForm() {
     const form = document.getElementById('upload-form');
     const progressBar = document.getElementById('upload-progress');
     const uploadBtn = document.getElementById('upload-btn');
-    const fileInput = document.getElementById('save-file');
 
     if (!form) {
         console.error('Upload form not found');
-        return;
-    }
-
-    if (!fileInput) {
-        console.error('File input not found in form');
         return;
     }
 
@@ -3206,17 +3151,15 @@ function setupUploadForm() {
         const platform = document.getElementById('save-platform').value;
         const category = document.getElementById('save-category').value;
         const description = document.getElementById('save-description').value;
-        const fileInput = document.getElementById('save-file');
-        
-        if (!fileInput) {
-            console.error('File input element not found');
+        const downloadUrlInput = document.getElementById('save-url');
+
+        if (!downloadUrlInput) {
+            console.error('Download URL input not found');
             showToast('Erro no formulário. Recarregue a página.', 'error');
             return;
         }
-        
-        const file = fileInput.files[0];
 
-        console.log('Form data:', { title, platform, category, description, file });
+        console.log('Form data:', { title, platform, category, description });
         console.log('Game input value:', gameInput.value);
         console.log('Game input dataset:', gameInput.dataset);
 
