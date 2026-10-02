@@ -4,8 +4,6 @@ const { uploadSaveCloudinary, uploadImagesCloudinary } = require('../middleware/
 const cloudinary = require('../config/cloudinary');
 const path = require('path');
 const fs = require('fs');
-const https = require('https');
-const http = require('http');
 
 // Use Cloudinary in production, local filesystem in development
 const isProduction = process.env.NODE_ENV === 'production';
@@ -374,64 +372,10 @@ const savesController = {
       if (save.file_path.startsWith('http')) {
         console.log('Download from Cloudinary URL:', save.file_path);
 
-        // Use Cloudinary SDK to download the file
-        // Extract public_id from URL
-        const urlParts = save.file_path.split('/');
-        const filename = urlParts[urlParts.length - 1];
-        const publicId = `kira-save/saves/${filename.replace(/\.[^/.]+$/, '')}`;
-
-        console.log('Cloudinary public_id:', publicId);
-
-        // Download from Cloudinary using SDK
-        cloudinary.api.resource(publicId, { resource_type: 'auto' }, (err, result) => {
-          if (err) {
-            console.error('Cloudinary API error:', err);
-            return res.status(500).json({ error: 'Failed to fetch file from Cloudinary: ' + err.message });
-          }
-
-          console.log('Cloudinary resource found:', result);
-
-          // Get the secure URL
-          const fileUrl = result.secure_url || result.url;
-          console.log('Streaming from:', fileUrl);
-
-          // Stream the file using HTTP/HTTPS
-          const url = new URL(fileUrl);
-          const protocol = url.protocol === 'https:' ? https : http;
-
-          protocol.get(fileUrl, (cloudRes) => {
-            console.log('Cloudinary HTTP response status:', cloudRes.statusCode);
-
-            if (cloudRes.statusCode !== 200) {
-              console.error('Cloudinary HTTP returned non-200 status:', cloudRes.statusCode);
-              return res.status(500).json({ error: 'Failed to download from Cloudinary (HTTP error)' });
-            }
-
-            // Set headers for download
-            res.setHeader('Content-Type', cloudRes.headers['content-type'] || 'application/octet-stream');
-            res.setHeader('Content-Disposition', `attachment; filename="save-${saveId}.rar"`);
-            res.setHeader('Content-Length', cloudRes.headers['content-length']);
-
-            // Pipe the stream to the response
-            cloudRes.pipe(res);
-
-            cloudRes.on('error', (err) => {
-              console.error('Cloudinary stream error:', err);
-              if (!res.headersSent) {
-                res.status(500).json({ error: 'Download stream error' });
-              }
-            });
-
-            cloudRes.on('end', () => {
-              console.log('Cloudinary download completed successfully');
-            });
-          }).on('error', (err) => {
-            console.error('Cloudinary HTTP request error:', err);
-            if (!res.headersSent) {
-              res.status(500).json({ error: 'Failed to connect to Cloudinary' });
-            }
-          });
-        });
+        // Simply redirect to the Cloudinary URL
+        // Cloudinary URLs are public by default and don't require authentication for download
+        // If getting 401, the Cloudinary account security settings need to be adjusted
+        res.redirect(save.file_path);
       } else {
         // Use local filesystem
         const filePath = path.join(__dirname, '../../public/uploads/saves/', save.file_path);
