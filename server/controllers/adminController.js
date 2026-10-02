@@ -28,7 +28,7 @@ const adminController = {
 
         (SELECT 'report' as type, r.id, r.reason, r.save_id, r.created_at, u.username, s.title as save_title
         FROM reports r
-        JOIN users u ON r.reporter_id = u.id
+        JOIN users u ON r.user_id = u.id
         JOIN saves s ON r.save_id = s.id
         WHERE r.status = 'pending'
         ORDER BY r.created_at DESC
@@ -627,8 +627,8 @@ const adminController = {
     }
 
     db.run(
-      'INSERT INTO warnings (user_id, save_id, reason, warning_type, created_by) VALUES (?, ?, ?, ?, ?)',
-      [user_id, save_id, reason, warning_type || 'general', req.user.id],
+      'INSERT INTO warnings (user_id, save_id, reason, admin_id) VALUES (?, ?, ?, ?)',
+      [user_id, save_id, reason, req.user.id],
       function(err) {
         if (err) {
           return res.status(500).json({ error: 'Failed to create warning' });

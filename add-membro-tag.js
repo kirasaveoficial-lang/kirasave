@@ -4,7 +4,7 @@ console.log('Adding Membro tag to existing users...\n');
 
 // Create Membro tag if it doesn't exist
 db.run(
-  `INSERT OR IGNORE INTO tags (name, color, icon, description) VALUES (?, ?, ?, ?)`,
+  `INSERT INTO tags (name, color, icon, description) VALUES (?, ?, ?, ?) ON CONFLICT (name) DO NOTHING`,
   ['Membro', '#10b981', 'user', 'Membro da comunidade'],
   function(err) {
     if (err) {
@@ -35,7 +35,7 @@ db.run(
         let assignedCount = 0;
         users.forEach(user => {
           db.run(
-            'INSERT OR IGNORE INTO user_tags (user_id, tag_id) VALUES (?, ?)',
+            'INSERT INTO user_tags (user_id, tag_id) VALUES (?, ?) ON CONFLICT (user_id, tag_id) DO NOTHING',
             [user.id, tag.id],
             (err) => {
               if (err) {

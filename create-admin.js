@@ -21,11 +21,11 @@ db.get('SELECT * FROM users WHERE username = ? OR email = ?', [adminUsername, ad
     console.log('Administrador já existe!');
     console.log('Username:', existingUser.username);
     console.log('Email:', existingUser.email);
-    console.log('É admin:', existingUser.is_admin === 1 ? 'Sim' : 'Não');
+    console.log('É admin:', existingUser.is_admin === true || existingUser.is_admin === 1 ? 'Sim' : 'Não');
 
     // Se não for admin, atualizar
-    if (existingUser.is_admin !== 1) {
-      db.run('UPDATE users SET is_admin = 1 WHERE id = ?', [existingUser.id], (err) => {
+    if (existingUser.is_admin !== true && existingUser.is_admin !== 1) {
+      db.run('UPDATE users SET is_admin = TRUE WHERE id = ?', [existingUser.id], (err) => {
         if (err) {
           console.error('Error updating user to admin:', err);
           process.exit(1);
@@ -39,7 +39,7 @@ db.get('SELECT * FROM users WHERE username = ? OR email = ?', [adminUsername, ad
   } else {
     // Criar novo admin
     db.run(
-      `INSERT INTO users (username, email, password, is_admin, is_online) VALUES (?, ?, ?, 1, 0)`,
+      `INSERT INTO users (username, email, password, is_admin, is_online) VALUES (?, ?, ?, TRUE, FALSE)`,
       [adminUsername, adminEmail, hashedPassword],
       function(err) {
         if (err) {
@@ -57,7 +57,7 @@ db.get('SELECT * FROM users WHERE username = ? OR email = ?', [adminUsername, ad
 
         // Criar tag de Administrador
         db.run(
-          `INSERT OR IGNORE INTO tags (name, color, icon, description) VALUES (?, ?, ?, ?)`,
+          `INSERT INTO tags (name, color, icon, description) VALUES (?, ?, ?, ?) ON CONFLICT (name) DO NOTHING`,
           ['Administrador', '#ef4444', 'shield-alt', 'Administrador do sistema'],
           function(err) {
             if (err) {
@@ -69,7 +69,7 @@ db.get('SELECT * FROM users WHERE username = ? OR email = ?', [adminUsername, ad
               db.get('SELECT id FROM tags WHERE name = ?', ['Administrador'], (err, tag) => {
                 if (tag) {
                   db.run(
-                    'INSERT OR IGNORE INTO user_tags (user_id, tag_id, assigned_by) VALUES (?, ?, ?)',
+                    'INSERT INTO user_tags (user_id, tag_id, assigned_by) VALUES (?, ?, ?) ON CONFLICT (user_id, tag_id) DO NOTHING',
                     [adminId, tag.id, adminId],
                     (err) => {
                       if (err) {

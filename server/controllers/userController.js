@@ -130,7 +130,7 @@ const userController = {
         }
 
         db.get(
-          "SELECT COUNT(*) as total FROM favorites f JOIN saves s ON f.save_id = s.id WHERE f.user_id = ? AND status = 'approved'",
+          "SELECT COUNT(*) as total FROM favorites f JOIN saves s ON f.save_id = s.id WHERE f.user_id = ? AND s.status = 'approved'",
           [id],
           (err, result) => {
             if (err) {
@@ -173,7 +173,7 @@ const userController = {
         }
 
         db.get(
-          "SELECT COUNT(*) as total FROM downloads d JOIN saves s ON d.save_id = s.id WHERE d.user_id = ? AND status = 'approved'",
+          "SELECT COUNT(*) as total FROM downloads d JOIN saves s ON d.save_id = s.id WHERE d.user_id = ? AND s.status = 'approved'",
           [id],
           (err, result) => {
             if (err) {

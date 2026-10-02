@@ -114,7 +114,9 @@ const savesController = {
     const { id } = req.params;
 
     // Increment view count
-    db.run('UPDATE saves SET view_count = view_count + 1 WHERE id = ?', [id]);
+    db.run('UPDATE saves SET view_count = view_count + 1 WHERE id = ?', [id], (err) => {
+      if (err) console.error('Error updating view count:', err);
+    });
 
     const query = `
       SELECT s.*, u.username, u.avatar, u.is_online, u.last_seen, u.created_at as user_created_at, g.name as game_name, g.cover_image as game_cover,
@@ -333,7 +335,9 @@ const savesController = {
       }
 
       // Increment download count
-      db.run('UPDATE saves SET download_count = download_count + 1 WHERE id = ?', [id]);
+      db.run('UPDATE saves SET download_count = download_count + 1 WHERE id = ?', [id], (err) => {
+        if (err) console.error('Error updating download count:', err);
+      });
 
       // Log download
       if (req.user) {
@@ -379,7 +383,7 @@ const savesController = {
     }
 
     db.run(
-      'INSERT INTO ratings (user_id, save_id, rating) VALUES (?, ?, ?) ON CONFLICT (user_id, save_id) DO UPDATE SET rating = $3',
+      'INSERT INTO ratings (user_id, save_id, rating) VALUES (?, ?, ?) ON CONFLICT (user_id, save_id) DO UPDATE SET rating = EXCLUDED.rating',
       [req.user.id, id, rating],
       function(err) {
         if (err) {

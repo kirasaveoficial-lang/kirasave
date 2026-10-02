@@ -467,6 +467,17 @@ function initializeSQLiteTables(db) {
       )
     `);
 
+    // Search history table
+    db.run(`
+      CREATE TABLE IF NOT EXISTS search_history (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        query TEXT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      )
+    `);
+
     console.log('SQLite tables initialized');
   });
 }
@@ -591,7 +602,7 @@ async function initializePostgreSQLTables(pool) {
         title VARCHAR(255) NOT NULL,
         message TEXT,
         link VARCHAR(500),
-        read_status BOOLEAN DEFAULT FALSE,
+        is_read BOOLEAN DEFAULT FALSE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
       )`,
@@ -624,6 +635,7 @@ async function initializePostgreSQLTables(pool) {
         user_id INTEGER NOT NULL,
         tag_id INTEGER NOT NULL,
         assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        assigned_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
         FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE,
         UNIQUE(user_id, tag_id)

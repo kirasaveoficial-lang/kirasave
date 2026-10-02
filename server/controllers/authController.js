@@ -262,7 +262,7 @@ const authController = {
           if (username && username !== req.user.username) {
             console.log('Logging username change:', { userId: req.user.id, oldUsername: req.user.username, newUsername: username });
             db.run(
-              'INSERT INTO activity_log (user_id, action_type, description, old_value, new_value) VALUES (?, ?, ?, ?, ?)',
+              'INSERT INTO activity_logs (user_id, action, description, old_value, new_value) VALUES (?, ?, ?, ?, ?)',
               [req.user.id, 'username_change', 'Username changed', req.user.username, username],
               function(logErr) {
                 if (logErr) {
@@ -396,7 +396,7 @@ const authController = {
 
             // Get user stats
             db.get(
-              'SELECT COUNT(*) as saves_count FROM saves WHERE user_id = ? AND status = "approved"',
+              'SELECT COUNT(*) as saves_count FROM saves WHERE user_id = ? AND status = \'approved\'',
               [userId],
               (err, stats) => {
                 const savesCount = stats ? stats.saves_count : 0;
