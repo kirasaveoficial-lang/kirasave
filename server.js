@@ -7,6 +7,9 @@ const rateLimit = require('express-rate-limit');
 
 const db = require('./server/config/database');
 
+// Initialize Cloudinary for avatars and images
+require('./server/config/cloudinary');
+
 // Run migrations on startup (non-blocking)
 const { Pool } = require('pg');
 const migrationPool = new Pool({

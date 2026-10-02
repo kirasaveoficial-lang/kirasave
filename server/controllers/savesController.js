@@ -1,7 +1,12 @@
 const db = require('../config/database');
 const { uploadImages, uploadSingleImage } = require('../middleware/upload');
+const { uploadImagesCloudinary } = require('../middleware/uploadCloudinary');
 const path = require('path');
 const fs = require('fs');
+
+// Use Cloudinary in production, local filesystem in development
+const isProduction = process.env.NODE_ENV === 'production';
+const useCloudinary = isProduction && (process.env.CLOUDINARY_CLOUD_NAME || process.env.CLOUDINARY_API_KEY);
 
 const savesController = {
   getAllSaves: (req, res) => {
@@ -272,7 +277,10 @@ const savesController = {
   },
 
   uploadSaveImages: (req, res) => {
-    uploadImages(req, res, (err) => {
+    // Use Cloudinary middleware in production, local filesystem in development
+    const uploadMiddleware = useCloudinary ? uploadImagesCloudinary : uploadImages;
+
+    uploadMiddleware(req, res, (err) => {
       if (err) {
         return res.status(400).json({ error: err.message });
       }
@@ -284,12 +292,17 @@ const savesController = {
       const { save_id } = req.body;
       const images = req.files;
 
+      console.log('Uploading images, using Cloudinary:', useCloudinary);
+
       let insertedCount = 0;
       images.forEach((file, index) => {
         const isCover = index === 0 ? 1 : 0;
+        // Use Cloudinary URL or local file path
+        const imagePath = useCloudinary ? file.path : file.filename;
+
         db.run(
           'INSERT INTO save_images (save_id, image_path, is_cover) VALUES (?, ?, ?)',
-          [save_id, file.filename, isCover],
+          [save_id, imagePath, isCover],
           (err) => {
             if (!err) insertedCount++;
             if (insertedCount === images.length) {
