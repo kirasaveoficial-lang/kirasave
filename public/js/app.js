@@ -3333,11 +3333,6 @@ function setupUploadForm() {
                     download_url: downloadUrl
                 })
             });
-                headers: {
-                    'Authorization': `Bearer ${state.token}`
-                },
-                body: formData
-            });
 
             console.log('Response status:', response.status);
             const data = await response.json();
