@@ -98,6 +98,8 @@ const tagsController = {
   assignTagToUser: (req, res) => {
     const { user_id, tag_id } = req.body;
 
+    console.log('Assigning tag to user:', { user_id, tag_id, admin_id: req.user.id });
+
     if (!user_id || !tag_id) {
       return res.status(400).json({ error: 'User ID and Tag ID are required' });
     }
@@ -107,12 +109,14 @@ const tagsController = {
       [user_id, tag_id, req.user.id],
       function(err) {
         if (err) {
-          if (err.message.includes('UNIQUE constraint failed')) {
+          console.error('Failed to assign tag:', err);
+          if (err.message.includes('UNIQUE constraint failed') || err.code === '23505') {
             return res.status(400).json({ error: 'User already has this tag' });
           }
-          return res.status(500).json({ error: 'Failed to assign tag' });
+          return res.status(500).json({ error: 'Failed to assign tag', details: err.message });
         }
 
+        console.log('Tag assigned successfully');
         res.json({ message: 'Tag assigned successfully' });
       }
     );
