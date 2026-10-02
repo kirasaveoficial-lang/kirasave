@@ -304,8 +304,3 @@ if (require.main === module) {
 }
 
 module.exports = initializePostgreSQLTables;
-if (require.main === module) {
-  initializePostgreSQLTables();
-}
-
-module.exports = initializePostgreSQLTables;
