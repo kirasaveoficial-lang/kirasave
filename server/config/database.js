@@ -40,6 +40,10 @@ if (isProduction && process.env.DATABASE_URL) {
         return match;
       });
 
+      // Convert integer 1/0 to TRUE/FALSE for boolean columns
+      pgSql = pgSql.replace(/\b(is_online|is_read|is_admin|is_banned|is_cover)\s*=\s*1\b/g, '$1 = TRUE');
+      pgSql = pgSql.replace(/\b(is_online|is_read|is_admin|is_banned|is_cover)\s*=\s*0\b/g, '$1 = FALSE');
+
       // Handle INSERT OR IGNORE -> INSERT ... ON CONFLICT DO NOTHING
       if (pgSql.trim().toUpperCase().startsWith('INSERT OR IGNORE')) {
         pgSql = pgSql.replace(/INSERT OR IGNORE/gi, 'INSERT');
