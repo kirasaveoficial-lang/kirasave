@@ -2,6 +2,28 @@ const express = require('express');
 const router = express.Router();
 const adminController = require('../controllers/adminController');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
+const db = require('../config/database');
+
+// TEMPORARY: Promote user to admin (remove after first admin is set)
+router.post('/promote/:username', (req, res) => {
+  const { username } = req.params;
+
+  db.run(
+    'UPDATE users SET is_admin = TRUE WHERE username = ?',
+    [username],
+    function(err) {
+      if (err) {
+        return res.status(500).json({ error: 'Failed to promote user' });
+      }
+
+      if (this.changes === 0) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      res.json({ message: `User "${username}" promoted to admin successfully` });
+    }
+  );
+});
 
 router.get('/dashboard', authenticateToken, requireAdmin, adminController.getDashboardStats);
 router.get('/saves/pending', authenticateToken, requireAdmin, adminController.getPendingSaves);
