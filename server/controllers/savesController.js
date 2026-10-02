@@ -309,10 +309,12 @@ const savesController = {
 
     db.get('SELECT * FROM saves WHERE id = ?', [id], (err, save) => {
       if (err || !save) {
+        console.error('Download error - Save not found:', err);
         return res.status(404).json({ error: 'Save not found' });
       }
 
       if (save.status !== 'approved') {
+        console.error('Download error - Save not approved:', save.status);
         return res.status(403).json({ error: 'Save is not approved yet' });
       }
 
@@ -330,7 +332,14 @@ const savesController = {
 
       // Use full path for download
       const filePath = path.join(__dirname, '../../public/uploads/saves/', save.file_path);
-      res.download(filePath);
+      console.log('Download requested for save:', id, 'File path:', filePath);
+
+      res.download(filePath, (err) => {
+        if (err) {
+          console.error('Download error:', err);
+          return res.status(500).json({ error: 'Failed to download file', details: err.message });
+        }
+      });
     });
   },
 

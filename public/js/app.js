@@ -3454,20 +3454,26 @@ async function downloadSave(id) {
         if (state.token) {
             headers['Authorization'] = `Bearer ${state.token}`;
         }
-        
+
+        console.log('Attempting to download save:', id);
+
         const response = await fetch(`${API_BASE}/saves/${id}/download`, {
             method: 'GET',
             headers
         });
-        
+
+        console.log('Download response status:', response.status);
+
         if (!response.ok) {
             const error = await response.json();
+            console.error('Download error:', error);
             throw new Error(error.error || 'Download failed');
         }
-        
+
         // Get the blob from response
         const blob = await response.blob();
-        
+        console.log('Download blob size:', blob.size);
+
         // Create download link
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -3477,6 +3483,8 @@ async function downloadSave(id) {
         a.click();
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
+
+        showToast('Download iniciado!', 'success');
         
         showToast('Download iniciado!', 'success');
     } catch (error) {
