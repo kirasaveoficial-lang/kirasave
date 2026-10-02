@@ -370,6 +370,8 @@ const savesController = {
       if (save.file_path.startsWith('http')) {
         console.log('Download from Cloudinary URL:', save.file_path);
         // Redirect to Cloudinary URL
+        // Cloudinary URLs are public by default, so redirect should work
+        // If getting 401, check Cloudinary security settings
         res.redirect(save.file_path);
       } else {
         // Use local filesystem
