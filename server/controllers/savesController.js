@@ -1,14 +1,7 @@
 const db = require('../config/database');
-const { uploadSave, uploadImages, uploadSingleImage } = require('../middleware/upload');
-const { uploadSaveCloudinary, uploadImagesCloudinary } = require('../middleware/uploadCloudinary');
-const cloudinary = require('../config/cloudinary');
+const { uploadImages, uploadSingleImage } = require('../middleware/upload');
 const path = require('path');
 const fs = require('fs');
-
-// Use Cloudinary in production, local filesystem in development
-const isProduction = process.env.NODE_ENV === 'production';
-// In production, always try to use Cloudinary if credentials are set
-const useCloudinary = isProduction && (process.env.CLOUDINARY_CLOUD_NAME || process.env.CLOUDINARY_API_KEY);
 
 const savesController = {
   getAllSaves: (req, res) => {
@@ -225,71 +218,57 @@ const savesController = {
   },
 
   createSave: (req, res) => {
-    console.log('=== UPLOAD REQUEST START ===');
+    console.log('=== SAVE CREATION START ===');
     console.log('User:', req.user);
     console.log('Body keys:', Object.keys(req.body));
     console.log('Body:', req.body);
-    console.log('Using Cloudinary:', useCloudinary);
 
-    // Use Cloudinary middleware in production, local filesystem in development
-    const uploadMiddleware = useCloudinary ? uploadSaveCloudinary : uploadSave;
+    const { title, description, game_id, platform, category, download_url } = req.body;
 
-    uploadMiddleware(req, res, (err) => {
-      if (err) {
-        console.error('Upload error:', err);
-        return res.status(400).json({ error: err.message });
-      }
+    console.log('Form data:', { title, description, game_id, platform, category, download_url });
 
-      console.log('File uploaded:', req.file);
-      console.log('File path:', req.file ? req.file.path : 'NO PATH');
+    if (!title || !game_id || !platform || !download_url) {
+      console.error('Missing required fields');
+      return res.status(400).json({ error: 'Title, game, platform, and download URL are required' });
+    }
 
-      if (!req.file) {
-        console.error('No file uploaded');
-        return res.status(400).json({ error: 'Save file is required' });
-      }
+    // Validate URL
+    try {
+      new URL(download_url);
+    } catch (e) {
+      console.error('Invalid download URL:', download_url);
+      return res.status(400).json({ error: 'Invalid download URL' });
+    }
 
-      const { title, description, game_id, platform, category } = req.body;
+    console.log('Creating save in database...');
+    console.log('Download URL to store:', download_url);
 
-      console.log('Form data:', { title, description, game_id, platform, category });
-
-      if (!title || !game_id || !platform) {
-        console.error('Missing required fields');
-        return res.status(400).json({ error: 'Title, game, and platform are required' });
-      }
-
-      // Store Cloudinary URL or local file path
-      const filePath = useCloudinary ? req.file.path : req.file.filename;
-
-      console.log('Creating save in database...');
-      console.log('File path to store:', filePath);
-
-      db.run(
-        `INSERT INTO saves (title, description, file_path, user_id, game_id, platform, category, status)
+    db.run(
+      `INSERT INTO saves (title, description, file_path, user_id, game_id, platform, category, status)
          VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')`,
-        [title, description, filePath, req.user.id, game_id, platform, category],
-        function(err) {
-          if (err) {
-            console.error('Database error:', err);
-            return res.status(500).json({ error: 'Failed to create save: ' + err.message });
-          }
-
-          console.log('=== SAVE CREATED SUCCESSFULLY ===');
-          console.log('Save ID:', this.lastID);
-          console.log('Status: pending');
-
-          // Create notification for approval
-          db.run(
-            'INSERT INTO notifications (user_id, type, title, message, link) VALUES (?, ?, ?, ?, ?)',
-            [req.user.id, 'save_pending', 'Save Enviado para Análise', `Seu save "${title}" foi enviado e está aguardando aprovação do administrador.`, `/profile`]
-          );
-
-          res.status(201).json({
-            message: 'Save created successfully and waiting for admin approval',
-            save_id: this.lastID
-          });
+      [title, description, download_url, req.user.id, game_id, platform, category],
+      function(err) {
+        if (err) {
+          console.error('Database error:', err);
+          return res.status(500).json({ error: 'Failed to create save: ' + err.message });
         }
-      );
-    });
+
+        console.log('=== SAVE CREATED SUCCESSFULLY ===');
+        console.log('Save ID:', this.lastID);
+        console.log('Status: pending');
+
+        // Create notification for approval
+        db.run(
+          'INSERT INTO notifications (user_id, type, title, message, link) VALUES (?, ?, ?, ?, ?)',
+          [req.user.id, 'save_pending', 'Save Enviado para Análise', `Seu save "${title}" foi enviado e está aguardando aprovação do administrador.`, `/profile`]
+        );
+
+        res.status(201).json({
+          message: 'Save created successfully and waiting for admin approval',
+          save_id: this.lastID
+        });
+      }
+    );
   },
 
   uploadSaveImages: (req, res) => {
@@ -368,34 +347,9 @@ const savesController = {
           [saveId, req.ip]);
       }
 
-      // Check if file_path is a Cloudinary URL
-      if (save.file_path.startsWith('http')) {
-        console.log('Download from Cloudinary URL:', save.file_path);
-
-        // Simply redirect to the Cloudinary URL
-        // Cloudinary URLs are public by default and don't require authentication for download
-        // If getting 401, the Cloudinary account security settings need to be adjusted
-        res.redirect(save.file_path);
-      } else {
-        // Use local filesystem
-        const filePath = path.join(__dirname, '../../public/uploads/saves/', save.file_path);
-        console.log('Download from local filesystem:', filePath);
-        console.log('File path from DB:', save.file_path);
-
-        if (!fs.existsSync(filePath)) {
-          console.error('File does not exist:', filePath);
-          return res.status(404).json({ error: 'File not found on server' });
-        }
-
-        console.log('File exists, starting download...');
-        res.download(filePath, (err) => {
-          if (err) {
-            console.error('Download error:', err);
-            return res.status(500).json({ error: 'Failed to download file', details: err.message });
-          }
-          console.log('Download completed successfully');
-        });
-      }
+      // Redirect to the external download URL (Mediafire, Mega, etc.)
+      console.log('Redirecting to download URL:', save.file_path);
+      res.redirect(save.file_path);
     });
   },
 

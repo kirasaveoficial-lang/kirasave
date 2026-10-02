@@ -1,11 +1,5 @@
 const db = require('../config/database');
 const { uploadAvatar } = require('../middleware/upload');
-const { uploadAvatarCloudinary } = require('../middleware/uploadCloudinary');
-
-// Use Cloudinary in production, local filesystem in development
-const isProduction = process.env.NODE_ENV === 'production';
-// In production, always try to use Cloudinary if credentials are set
-const useCloudinary = isProduction && (process.env.CLOUDINARY_CLOUD_NAME || process.env.CLOUDINARY_API_KEY);
 
 const userController = {
   getUserProfile: (req, res) => {
@@ -197,10 +191,7 @@ const userController = {
   },
 
   updateAvatar: (req, res) => {
-    // Use Cloudinary middleware in production, local filesystem in development
-    const uploadMiddleware = useCloudinary ? uploadAvatarCloudinary : uploadAvatar;
-
-    uploadMiddleware(req, res, (err) => {
+    uploadAvatar(req, res, (err) => {
       if (err) {
         console.error('Avatar upload error:', err);
         return res.status(400).json({ error: err.message });
@@ -212,10 +203,9 @@ const userController = {
       }
 
       console.log('Avatar uploaded:', req.file);
-      console.log('Using Cloudinary:', useCloudinary);
 
-      // Use Cloudinary URL or local relative path
-      const avatarPath = useCloudinary ? req.file.path : '/uploads/avatars/' + req.file.filename;
+      // Use relative path for frontend access
+      const avatarPath = '/uploads/avatars/' + req.file.filename;
 
       db.run(
         'UPDATE users SET avatar = ?, updated_at = NOW() WHERE id = ?',

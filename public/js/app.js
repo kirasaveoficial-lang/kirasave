@@ -649,17 +649,9 @@ function renderUploadPage() {
                         </div>
 
                         <div class="mb-4">
-                            <label class="block text-gray-300 text-xs mb-1.5">Arquivo do Save</label>
-                            <input type="file" id="save-file" accept=".zip,.rar,.7z" required class="hidden">
-                            <div class="drop-zone text-sm" id="drop-zone">
-                                <i class="fas fa-cloud-upload-alt text-3xl text-purple-400 mb-2"></i>
-                                <p class="text-gray-400">Arraste o arquivo ou clique para selecionar</p>
-                                <p class="text-gray-500 text-xs mt-1">ZIP, RAR, 7Z</p>
-                            </div>
-                            <div id="file-info" class="mt-2 text-xs text-gray-400 hidden">
-                                <i class="fas fa-file-archive mr-1"></i>
-                                <span id="file-name"></span>
-                            </div>
+                            <label class="block text-gray-300 text-xs mb-1.5">Link do Download (Mediafire, Mega, etc.)</label>
+                            <input type="url" id="save-url" placeholder="https://..." required class="input-field w-full text-sm">
+                            <p class="text-gray-500 text-xs mt-1">Cole o link do arquivo do Mediafire, Mega, Google Drive, etc.</p>
                         </div>
 
                         <div class="mb-4">
@@ -3303,9 +3295,20 @@ function setupUploadForm() {
             return;
         }
 
-        if (!file) {
-            console.error('No file selected');
-            showToast('Selecione um arquivo', 'error');
+        const downloadUrl = document.getElementById('save-url').value.trim();
+
+        if (!downloadUrl) {
+            console.error('No download URL provided');
+            showToast('Por favor, forneça o link de download', 'error');
+            return;
+        }
+
+        // Validate URL
+        try {
+            new URL(downloadUrl);
+        } catch (e) {
+            console.error('Invalid URL:', downloadUrl);
+            showToast('Por favor, forneça um link válido (deve começar com http:// ou https://)', 'error');
             return;
         }
 
@@ -3313,20 +3316,23 @@ function setupUploadForm() {
         uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1.5"></i> Enviando...';
 
         try {
-            console.log('Starting upload...');
-            // Upload save
-            const formData = new FormData();
-            formData.append('title', title);
-            formData.append('game_id', gameId);
-            formData.append('platform', platform);
-            formData.append('category', category);
-            formData.append('description', description);
-            formData.append('saveFile', file);
-
-            console.log('FormData prepared');
-
+            console.log('Starting save creation...');
+            // Create save with external link
             const response = await fetch('/api/saves', {
                 method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${state.token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    title,
+                    game_id: gameId,
+                    platform,
+                    category,
+                    description,
+                    download_url: downloadUrl
+                })
+            });
                 headers: {
                     'Authorization': `Bearer ${state.token}`
                 },

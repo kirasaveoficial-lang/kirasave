@@ -156,30 +156,9 @@ const adminController = {
       console.log('Save found:', { id: save.id, title: save.title, file_path: save.file_path });
 
       // Admin can download any save regardless of status
-      // Check if file_path is a Cloudinary URL
-      if (save.file_path.startsWith('http')) {
-        console.log('Download from Cloudinary URL:', save.file_path);
-        // Simply redirect to the Cloudinary URL
-        res.redirect(save.file_path);
-      } else {
-        // Use local filesystem
-        const filePath = path.join(__dirname, '../../public/uploads/saves/', save.file_path);
-        console.log('Download from local filesystem:', filePath);
-
-        if (!fs.existsSync(filePath)) {
-          console.error('File does not exist:', filePath);
-          return res.status(404).json({ error: 'File not found on server' });
-        }
-
-        console.log('File exists, starting download...');
-        res.download(filePath, (err) => {
-          if (err) {
-            console.error('Download error:', err);
-            return res.status(500).json({ error: 'Failed to download file' });
-          }
-          console.log('Download completed successfully');
-        });
-      }
+      // Redirect to the external download URL (Mediafire, Mega, etc.)
+      console.log('Redirecting to download URL:', save.file_path);
+      res.redirect(save.file_path);
     });
   },
 
