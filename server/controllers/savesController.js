@@ -379,7 +379,7 @@ const savesController = {
     }
 
     db.run(
-      'INSERT INTO ratings (user_id, save_id, rating) VALUES (?, ?, ?) ON CONFLICT (user_id, save_id) DO UPDATE SET rating = EXCLUDED.rating',
+      'INSERT INTO ratings (user_id, save_id, rating) VALUES (?, ?, ?) ON CONFLICT (user_id, save_id) DO UPDATE SET rating = $3',
       [req.user.id, id, rating],
       function(err) {
         if (err) {
