@@ -148,7 +148,7 @@ const adminController = {
     const { id } = req.params;
 
     db.run(
-      'UPDATE saves SET status = "approved", updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+      "UPDATE saves SET status = 'approved', updated_at = NOW() WHERE id = ?",
       [id],
       function(err) {
         if (err) {
@@ -175,7 +175,7 @@ const adminController = {
     const { reason } = req.body;
 
     db.run(
-      'UPDATE saves SET status = "rejected", updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+      "UPDATE saves SET status = 'rejected', updated_at = NOW() WHERE id = ?",
       [id],
       function(err) {
         if (err) {
@@ -260,7 +260,7 @@ const adminController = {
     const { action } = req.body; // 'dismiss' or 'delete_save'
 
     db.run(
-      'UPDATE reports SET status = "resolved" WHERE id = ?',
+      "UPDATE reports SET status = 'resolved' WHERE id = ?",
       [id],
       function(err) {
         if (err) {
@@ -374,7 +374,7 @@ const adminController = {
 
       // Update user as banned
       db.run(
-        'UPDATE users SET is_banned = 1 WHERE id = ?',
+        'UPDATE users SET is_banned = TRUE WHERE id = ?',
         [id],
         function(err) {
           if (err) {
@@ -409,7 +409,7 @@ const adminController = {
     const { id } = req.params;
 
     db.run(
-      'UPDATE users SET is_banned = 0 WHERE id = ?',
+      'UPDATE users SET is_banned = FALSE WHERE id = ?',
       [id],
       function(err) {
         if (err) {
@@ -753,7 +753,7 @@ const adminController = {
     const { page = 1, limit = 20, search } = req.query;
     const offset = (page - 1) * limit;
 
-    let whereClause = 'WHERE u.is_banned = 1';
+    let whereClause = 'WHERE u.is_banned = TRUE';
     const params = [];
 
     if (search) {
@@ -805,7 +805,7 @@ const adminController = {
     const { id } = req.params;
 
     db.run(
-      'UPDATE users SET is_banned = 0 WHERE id = ?',
+      'UPDATE users SET is_banned = FALSE WHERE id = ?',
       [id],
       function(err) {
         if (err) {

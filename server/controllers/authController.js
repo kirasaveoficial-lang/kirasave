@@ -41,7 +41,7 @@ const authController = {
         // Check if this is the first user - make them admin
         db.get('SELECT COUNT(*) as count FROM users', (err, result) => {
           if (!err && result.count === 1) {
-            db.run('UPDATE users SET is_admin = 1 WHERE id = ?', [userId], (err) => {
+            db.run('UPDATE users SET is_admin = TRUE WHERE id = ?', [userId], (err) => {
               if (err) console.error('Error setting first user as admin:', err);
               else console.log('First user set as admin');
             });
@@ -116,7 +116,7 @@ const authController = {
 
         // Mark user as online
         db.run(
-          'UPDATE users SET is_online = 1, last_seen = CURRENT_TIMESTAMP WHERE id = ?',
+          'UPDATE users SET is_online = TRUE, last_seen = NOW() WHERE id = ?',
           [user.id],
           (err) => {
             if (err) console.error('Error updating online status:', err);
@@ -240,7 +240,7 @@ const authController = {
 
     function performUpdate() {
       db.run(
-        'UPDATE users SET bio = ?, username = ?, birth_date = ?, updated_at = CURRENT_TIMESTAMP, username_changed_at = CURRENT_TIMESTAMP WHERE id = ?',
+        'UPDATE users SET bio = ?, username = ?, birth_date = ?, updated_at = NOW(), username_changed_at = NOW() WHERE id = ?',
         [bio || '', username || req.user.username, birth_date || null, req.user.id],
         function(err) {
           if (err) {
@@ -300,7 +300,7 @@ const authController = {
       const hashedPassword = bcrypt.hashSync(new_password, 10);
 
       db.run(
-        'UPDATE users SET password = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+        'UPDATE users SET password = ?, updated_at = NOW() WHERE id = ?',
         [hashedPassword, req.user.id],
         function(err) {
           if (err) {
@@ -334,7 +334,7 @@ const authController = {
 
       // Update email
       db.run(
-        'UPDATE users SET email = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+        'UPDATE users SET email = ?, updated_at = NOW() WHERE id = ?',
         [new_email, req.user.id],
         function(err) {
           if (err) {
@@ -353,7 +353,7 @@ const authController = {
   logout: (req, res) => {
     // Mark user as offline
     db.run(
-      'UPDATE users SET is_online = 0, last_seen = CURRENT_TIMESTAMP WHERE id = ?',
+      'UPDATE users SET is_online = FALSE, last_seen = NOW() WHERE id = ?',
       [req.user.id],
       (err) => {
         if (err) {
@@ -422,7 +422,7 @@ const authController = {
     }
 
     db.run(
-      'UPDATE users SET is_online = 1, last_seen = NOW() WHERE id = ?',
+      'UPDATE users SET is_online = TRUE, last_seen = NOW() WHERE id = ?',
       [userId],
       (err) => {
         if (err) {

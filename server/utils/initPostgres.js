@@ -244,16 +244,24 @@ async function initializePostgreSQLTables() {
 
     // Fix notifications table column name if needed (read_status -> is_read)
     try {
-      await pool.query(`
-        ALTER TABLE notifications
-        RENAME COLUMN read_status TO is_read
+      // Check if column exists first
+      const checkColumn = await pool.query(`
+        SELECT column_name
+        FROM information_schema.columns
+        WHERE table_name = 'notifications' AND column_name = 'read_status'
       `);
-      console.log('Fixed notifications table column name');
-    } catch (err) {
-      // Column might already be renamed or doesn't exist
-      if (!err.message.includes('column "read_status" does not exist')) {
-        console.log('Column rename skipped or already done');
+
+      if (checkColumn.rows.length > 0) {
+        await pool.query(`
+          ALTER TABLE notifications
+          RENAME COLUMN read_status TO is_read
+        `);
+        console.log('Fixed notifications table column name (read_status -> is_read)');
+      } else {
+        console.log('Notifications table already has correct column name');
       }
+    } catch (err) {
+      console.log('Column rename check error (might be OK):', err.message);
     }
 
     console.log('PostgreSQL tables initialized successfully');

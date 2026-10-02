@@ -224,7 +224,7 @@ const userController = {
     const params = [req.user.id];
 
     if (unread_only === 'true') {
-      query += ' AND is_read = 0';
+      query += ' AND is_read = FALSE';
     }
 
     query += ' ORDER BY created_at DESC LIMIT 50';
@@ -237,7 +237,7 @@ const userController = {
 
       // Get unread count
       db.get(
-        'SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0',
+        'SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = FALSE',
         [req.user.id],
         (err, result) => {
           if (err) {

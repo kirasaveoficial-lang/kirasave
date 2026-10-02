@@ -508,7 +508,7 @@ const savesController = {
       }
 
       db.run(
-        'UPDATE comments SET content = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+        'UPDATE comments SET content = ?, updated_at = NOW() WHERE id = ?',
         [content, id],
         (err) => {
           if (err) {

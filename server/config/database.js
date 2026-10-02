@@ -92,6 +92,10 @@ if (isProduction && process.env.DATABASE_URL) {
       // Convert SQLite CURRENT_TIMESTAMP to PostgreSQL NOW()
       pgSql = pgSql.replace(/CURRENT_TIMESTAMP/g, 'NOW()');
 
+      // Convert integer 1/0 to TRUE/FALSE for boolean columns
+      pgSql = pgSql.replace(/\b(is_online|is_read|is_admin|is_banned|is_cover)\s*=\s*1\b/g, '$1 = TRUE');
+      pgSql = pgSql.replace(/\b(is_online|is_read|is_admin|is_banned|is_cover)\s*=\s*0\b/g, '$1 = FALSE');
+
       // Handle case where params is actually the callback (no params provided)
       const actualParams = Array.isArray(params) ? params : [];
       const actualCallback = typeof params === 'function' ? params : callback;
@@ -127,6 +131,10 @@ if (isProduction && process.env.DATABASE_URL) {
 
       // Convert SQLite CURRENT_TIMESTAMP to PostgreSQL NOW()
       pgSql = pgSql.replace(/CURRENT_TIMESTAMP/g, 'NOW()');
+
+      // Convert integer 1/0 to TRUE/FALSE for boolean columns
+      pgSql = pgSql.replace(/\b(is_online|is_read|is_admin|is_banned|is_cover)\s*=\s*1\b/g, '$1 = TRUE');
+      pgSql = pgSql.replace(/\b(is_online|is_read|is_admin|is_banned|is_cover)\s*=\s*0\b/g, '$1 = FALSE');
 
       // Handle case where params is actually the callback (no params provided)
       const actualParams = Array.isArray(params) ? params : [];
