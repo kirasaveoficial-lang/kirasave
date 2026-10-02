@@ -62,7 +62,7 @@ const authController = {
               if (tag) {
                 // Assign tag to user
                 db.run(
-                  'INSERT INTO user_tags (user_id, tag_id) VALUES (?, ?)',
+                  'INSERT INTO user_tags (user_id, tag_id) VALUES (?, ?) ON CONFLICT (user_id, tag_id) DO NOTHING',
                   [userId, tag.id],
                   (err) => {
                     if (err) console.error('Error assigning Membro tag:', err);
@@ -174,16 +174,14 @@ const authController = {
           (err, stats) => {
             if (err) stats = { saves_count: 0, favorites_count: 0 };
 
-            // Get user's tags
-            const tagsQuery = `SELECT t.*, ut.assigned_at, ut.assigned_by,
-                (SELECT username FROM users WHERE id = ut.assigned_by) as assigned_by_username
+            // Get user's tags (simplified query without assigned_by for now)
+            const tagsQuery = `SELECT t.*, ut.assigned_at
               FROM tags t
               JOIN user_tags ut ON t.id = ut.tag_id
               WHERE ut.user_id = ?
               ORDER BY ut.assigned_at DESC`;
             
             console.log('Fetching tags for user:', req.user.id);
-            console.log('Tags query:', tagsQuery);
 
             db.all(
               tagsQuery,
@@ -195,7 +193,6 @@ const authController = {
                 }
 
                 console.log('User tags returned:', tags);
-                console.log('Number of tags:', tags.length);
 
                 res.json({
                   ...user,
@@ -388,7 +385,7 @@ const authController = {
         // Get user tags
         console.log('Fetching tags for user profile:', userId);
         db.all(
-          'SELECT t.* FROM tags t JOIN user_tags ut ON t.id = ut.tag_id WHERE ut.user_id = ?',
+          'SELECT t.*, ut.assigned_at FROM tags t JOIN user_tags ut ON t.id = ut.tag_id WHERE ut.user_id = ?',
           [userId],
           (err, tags) => {
             if (err) {

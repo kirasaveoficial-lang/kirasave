@@ -7,12 +7,6 @@ const rateLimit = require('express-rate-limit');
 
 const db = require('./server/config/database');
 
-// Run migrations on startup (temporary, remove after first successful deploy)
-const { initializePostgreSQLTables } = require('./server/utils/initPostgres');
-initializePostgreSQLTables().catch(err => {
-  console.error('Migration failed, continuing anyway:', err);
-});
-
 // Start online status checker after database is initialized
 // Temporarily disabled due to PostgreSQL migration issues
 // setTimeout(() => {

@@ -77,8 +77,7 @@ const tagsController = {
     const { user_id } = req.params;
 
     db.all(
-      `SELECT t.*, ut.assigned_at, ut.assigned_by,
-        (SELECT username FROM users WHERE id = ut.assigned_by) as assigned_by_username
+      `SELECT t.*, ut.assigned_at
       FROM tags t
       JOIN user_tags ut ON t.id = ut.tag_id
       WHERE ut.user_id = ?
@@ -105,14 +104,11 @@ const tagsController = {
     }
 
     db.run(
-      'INSERT INTO user_tags (user_id, tag_id, assigned_by) VALUES (?, ?, ?)',
-      [user_id, tag_id, req.user.id],
+      'INSERT INTO user_tags (user_id, tag_id) VALUES (?, ?) ON CONFLICT (user_id, tag_id) DO NOTHING',
+      [user_id, tag_id],
       function(err) {
         if (err) {
           console.error('Failed to assign tag:', err);
-          if (err.message.includes('UNIQUE constraint failed') || err.code === '23505') {
-            return res.status(400).json({ error: 'User already has this tag' });
-          }
           return res.status(500).json({ error: 'Failed to assign tag', details: err.message });
         }
 
