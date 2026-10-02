@@ -95,10 +95,10 @@ function setupNavigation() {
             </div>
             <div class="relative">
                 <button onclick="toggleAvatarDropdown()" class="flex items-center space-x-2 text-gray-300 hover:text-purple-400 transition-colors group">
-                    <img src="${state.user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(state.user.username)}&background=8b5cf6&color=fff&size=200&bold=true`}" alt="Avatar" class="avatar group-hover:ring-2 transition-all" style="${state.user.vipType ? `border-color: ${state.user.vipType === 'gold' ? '#ffd700' : state.user.vipType === 'diamond' ? '#06b6d4' : state.user.vipType === 'extreme' ? '#ff0000' : '#8b5cf6'}; --hover-ring-color: ${state.user.vipType === 'gold' ? '#ffd700' : state.user.vipType === 'diamond' ? '#06b6d4' : state.user.vipType === 'extreme' ? '#ff0000' : '#8b5cf6'};` : ''}" ${state.user.vipType ? `onmouseover="this.style.boxShadow='0 0 0 2px var(--hover-ring-color)'" onmouseout="this.style.boxShadow=''"` : ''}>
+                    <img src="${state.user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(state.user.username)}&background=8b5cf6&color=fff&size=200&bold=true`}" alt="Avatar" class="avatar group-hover:ring-2 transition-all" style="${state.user.tagColor ? `border-color: ${state.user.tagColor}; --hover-ring-color: ${state.user.tagColor};` : ''}" ${state.user.tagColor ? `onmouseover="this.style.boxShadow='0 0 0 2px var(--hover-ring-color)'" onmouseout="this.style.boxShadow=''"` : ''}>
                     <div class="username-glow-wrapper">
                         <div class="username-particles" id="header-username-particles"></div>
-                        <span class="username-glow ${state.user.vipType ? `vip-${state.user.vipType}` : ''}" style="${state.user.vipType ? `color: ${state.user.vipType === 'gold' ? '#ffd700' : state.user.vipType === 'diamond' ? '#06b6d4' : state.user.vipType === 'extreme' ? '#ff0000' : '#8b5cf6'};` : ''}">${state.user.username}</span>
+                        <span class="username-glow ${state.user.tagType ? `vip-${state.user.tagType}` : ''}" style="${state.user.tagColor ? `color: ${state.user.tagColor};` : ''}">${state.user.username}</span>
                     </div>
                     <i class="fas fa-chevron-down text-xs transition-transform group-hover:rotate-180"></i>
                 </button>
@@ -140,7 +140,7 @@ function setupNavigation() {
         `;
 
         // Create username particles for header with user's VIP type
-        setTimeout(() => createUsernameParticles(state.user.vipType), 100);
+        setTimeout(() => createUsernameParticles(state.user.tagType, state.user.tagColor), 100);
     } else {
         nav.innerHTML = `
             <a href="/login" class="text-gray-300 hover:text-purple-400 transition-colors">Entrar</a>
@@ -297,18 +297,19 @@ async function fetchUserProfile() {
         const data = await apiCall('/auth/profile');
         state.user = data;
 
-        // Extract VIP type from tags
+        // Extract tag color and type from tags
         if (data.tags && data.tags.length > 0) {
-            const vipTag = data.tags.find(tag => tag.name.toLowerCase().includes('vip'));
-            if (vipTag) {
-                state.user.vipType = vipTag.name.includes('Gold') ? 'gold' :
-                                   vipTag.name.includes('Diamond') ? 'diamond' :
-                                   vipTag.name.includes('EXTREME') ? 'extreme' : 'platinum';
-            } else {
-                state.user.vipType = null;
-            }
+            const mainTag = data.tags[0];
+            state.user.tagColor = mainTag.color;
+            const tagName = mainTag.name.toLowerCase();
+            state.user.tagType = tagName.includes('Gold') ? 'gold' :
+                               tagName.includes('Diamond') ? 'diamond' :
+                               tagName.includes('EXTREME') ? 'extreme' :
+                               tagName.includes('Ruby') ? 'ruby' :
+                               tagName.includes('Platinum') ? 'platinum' : 'standard';
         } else {
-            state.user.vipType = null;
+            state.user.tagColor = null;
+            state.user.tagType = null;
         }
 
         setupNavigation();
@@ -350,6 +351,9 @@ async function register(username, email, password) {
         state.token = data.token;
         state.user = data.user;
         localStorage.setItem('token', data.token);
+
+        // Fetch full profile to get tags
+        await fetchUserProfile();
 
         showToast('Cadastro realizado com sucesso!', 'success');
         setupNavigation();
@@ -1531,19 +1535,30 @@ function showLoginRequiredMessage() {
 }
 
 // ===== Username Particles =====
-function createUsernameParticles(userVipType = null) {
+function createUsernameParticles(userTagType = null, userTagColor = null) {
     const particleContainers = document.querySelectorAll('.username-particles');
 
     particleContainers.forEach(container => {
-        // Use provided VIP type or detect from parent element
-        let vipType = userVipType;
-        if (!vipType) {
-            const parent = container.closest('.vip-gold, .vip-platinum, .vip-diamond, .vip-extreme');
+        // Use provided tag type/color or detect from parent element
+        let tagType = userTagType;
+        let tagColor = userTagColor;
+
+        if (!tagColor) {
+            // Try to get color from parent element style
+            const parentGlow = container.closest('.username-glow');
+            if (parentGlow && parentGlow.style.color) {
+                tagColor = parentGlow.style.color;
+            }
+        }
+
+        if (!tagType) {
+            const parent = container.closest('.vip-gold, .vip-platinum, .vip-diamond, .vip-extreme, .vip-ruby');
             if (parent) {
-                if (parent.classList.contains('vip-gold')) vipType = 'gold';
-                else if (parent.classList.contains('vip-platinum')) vipType = 'platinum';
-                else if (parent.classList.contains('vip-diamond')) vipType = 'diamond';
-                else if (parent.classList.contains('vip-extreme')) vipType = 'extreme';
+                if (parent.classList.contains('vip-gold')) tagType = 'gold';
+                else if (parent.classList.contains('vip-platinum')) tagType = 'platinum';
+                else if (parent.classList.contains('vip-diamond')) tagType = 'diamond';
+                else if (parent.classList.contains('vip-extreme')) tagType = 'extreme';
+                else if (parent.classList.contains('vip-ruby')) tagType = 'ruby';
             }
         }
 
@@ -1556,8 +1571,14 @@ function createUsernameParticles(userVipType = null) {
             particle.className = 'username-particle';
 
             // Add VIP class if applicable
-            if (vipType) {
-                particle.classList.add(`vip-${vipType}`);
+            if (tagType) {
+                particle.classList.add(`vip-${tagType}`);
+            }
+
+            // Set color from tag if available
+            if (tagColor) {
+                particle.style.backgroundColor = tagColor;
+                particle.style.boxShadow = `0 0 6px ${tagColor}`;
             }
 
             // Random position around the username (more concentrated)
@@ -2340,8 +2361,8 @@ function renderProfile(user) {
     // Create mini particles for profile card
     createProfileParticles();
 
-    // Create username particles with user's tag type
-    createUsernameParticles(tagType);
+    // Create username particles with user's tag type and color
+    createUsernameParticles(tagType, tagColor);
 
     // Create comment username particles
     createCommentUsernameParticles();
@@ -2499,8 +2520,8 @@ function renderUserProfile(user) {
     // Create mini particles for profile card
     createProfileParticles();
 
-    // Create username particles with user's tag type
-    createUsernameParticles(tagType);
+    // Create username particles with user's tag type and color
+    createUsernameParticles(tagType, tagColor);
 
     // Create comment username particles
     createCommentUsernameParticles();

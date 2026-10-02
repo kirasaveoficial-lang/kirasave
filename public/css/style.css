@@ -2301,6 +2301,11 @@ select option {
     box-shadow: 0 0 10px rgba(255, 0, 0, 0.9);
 }
 
+.username-particle.vip-ruby {
+    background: rgba(220, 38, 38, 0.8);
+    box-shadow: 0 0 10px rgba(220, 38, 38, 0.9);
+}
+
 @keyframes usernameParticleFloat {
     0%, 100% {
         transform: translateY(0) scale(1);
