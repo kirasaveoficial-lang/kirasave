@@ -1539,6 +1539,9 @@ function createUsernameParticles(userTagType = null, userTagColor = null) {
     const particleContainers = document.querySelectorAll('.username-particles');
 
     particleContainers.forEach(container => {
+        // Clear existing particles first to prevent duplicates
+        container.innerHTML = '';
+
         // Use provided tag type/color or detect from parent element
         let tagType = userTagType;
         let tagColor = userTagColor;
@@ -1561,9 +1564,6 @@ function createUsernameParticles(userTagType = null, userTagColor = null) {
                 else if (parent.classList.contains('vip-ruby')) tagType = 'ruby';
             }
         }
-
-        // Clear existing particles
-        container.innerHTML = '';
 
         // Create 8 particles
         for (let i = 0; i < 8; i++) {
@@ -2161,7 +2161,7 @@ function renderSaveDetails(save) {
     setTimeout(() => initCarousels(), 100);
 
     // Reinitialize username particles
-    setTimeout(() => createUsernameParticles(state.user.vipType), 200);
+    setTimeout(() => createUsernameParticles(state.user.tagType, state.user.tagColor), 200);
 
     // Create comment username particles
     setTimeout(() => createCommentUsernameParticles(), 300);
@@ -3493,7 +3493,7 @@ async function toggleFavorite(id) {
         showToast(data.message, 'success');
         loadSaveDetails(id);
         // Reinitialize header username particles
-        setTimeout(() => createUsernameParticles(state.user.vipType), 300);
+        setTimeout(() => createUsernameParticles(state.user.tagType, state.user.tagColor), 300);
     } catch (error) {
         // Error handled in apiCall
     }
@@ -3562,7 +3562,7 @@ async function addComment(e, id) {
         form.reset();
         loadSaveDetails(id);
         // Reinitialize header username particles
-        setTimeout(() => createUsernameParticles(state.user.vipType), 300);
+        setTimeout(() => createUsernameParticles(state.user.tagType, state.user.tagColor), 300);
     } catch (error) {
         // Error handled in apiCall
     }
@@ -3578,7 +3578,7 @@ async function likeComment(commentId) {
         const id = currentPath.split('/')[2];
         loadSaveDetails(id);
         // Reinitialize header username particles
-        setTimeout(() => createUsernameParticles(state.user.vipType), 300);
+        setTimeout(() => createUsernameParticles(state.user.tagType, state.user.tagColor), 300);
     } catch (error) {
         // Error handled in apiCall
     }
@@ -3947,7 +3947,7 @@ async function addSaveImage(e, saveId) {
         closeModal();
         loadSaveDetails(saveId);
         // Reinitialize header username particles
-        setTimeout(() => createUsernameParticles(state.user.vipType), 300);
+        setTimeout(() => createUsernameParticles(state.user.tagType, state.user.tagColor), 300);
     } catch (error) {
         showToast(error.message || 'Erro ao adicionar imagens', 'error');
     }
@@ -3962,7 +3962,7 @@ async function deleteSaveImage(saveId, imageId) {
         closeModal();
         loadSaveDetails(saveId);
         // Reinitialize header username particles
-        setTimeout(() => createUsernameParticles(state.user.vipType), 300);
+        setTimeout(() => createUsernameParticles(state.user.tagType, state.user.tagColor), 300);
     } catch (error) {
         showToast(error.message || 'Erro ao excluir imagem', 'error');
     }
