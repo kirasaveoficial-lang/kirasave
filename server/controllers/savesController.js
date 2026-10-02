@@ -158,7 +158,7 @@ const savesController = {
             SELECT c.*, u.username, u.avatar, u.id as user_id, u.bio, u.is_online, u.created_at as user_created_at,
               (SELECT COUNT(*) FROM comment_likes WHERE comment_id = c.id) as likes_count,
               (SELECT COUNT(*) FROM comment_likes WHERE comment_id = c.id AND user_id = ?) as user_liked,
-              CASE WHEN c.updated_at > c.created_at THEN 1 ELSE 0 END as is_edited
+              CASE WHEN c.updated_at > c.created_at THEN TRUE ELSE FALSE END as is_edited
             FROM comments c
             JOIN users u ON c.user_id = u.id
             WHERE c.save_id = ?

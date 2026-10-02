@@ -17,40 +17,40 @@ const adminController = {
 
       // Get recent activity (comments, reports, pending saves, username changes)
       db.all(`
-        SELECT 'comment' as type, c.id, c.content as title, c.save_id, c.created_at, u.username, s.title as save_title
+        (SELECT 'comment' as type, c.id, c.content as title, c.save_id, c.created_at, u.username, s.title as save_title
         FROM comments c
         JOIN users u ON c.user_id = u.id
         JOIN saves s ON c.save_id = s.id
         ORDER BY c.created_at DESC
-        LIMIT 5
+        LIMIT 5)
 
         UNION ALL
 
-        SELECT 'report' as type, r.id, r.reason, r.save_id, r.created_at, u.username, s.title as save_title
+        (SELECT 'report' as type, r.id, r.reason, r.save_id, r.created_at, u.username, s.title as save_title
         FROM reports r
         JOIN users u ON r.reporter_id = u.id
         JOIN saves s ON r.save_id = s.id
         WHERE r.status = 'pending'
         ORDER BY r.created_at DESC
-        LIMIT 5
+        LIMIT 5)
 
         UNION ALL
 
-        SELECT 'save' as type, s.id, s.title, s.id as save_id, s.created_at, u.username, s.title as save_title
+        (SELECT 'save' as type, s.id, s.title, s.id as save_id, s.created_at, u.username, s.title as save_title
         FROM saves s
         JOIN users u ON s.user_id = u.id
         WHERE s.status = 'pending'
         ORDER BY s.created_at DESC
-        LIMIT 5
+        LIMIT 5)
 
         UNION ALL
 
-        SELECT 'username_change' as type, al.id, al.description as title, al.user_id as save_id, al.created_at, u.username, al.new_value as save_title
+        (SELECT 'username_change' as type, al.id, al.description as title, al.user_id as save_id, al.created_at, u.username, al.new_value as save_title
         FROM activity_logs al
         JOIN users u ON al.user_id = u.id
         WHERE al.action_type = 'username_change'
         ORDER BY al.created_at DESC
-        LIMIT 5
+        LIMIT 5)
       `, (err, activity) => {
         if (err) activity = [];
 
