@@ -13,8 +13,16 @@ uploadDirs.forEach(dir => {
   const fullPath = path.join(__dirname, '../../', dir);
   if (!fs.existsSync(fullPath)) {
     fs.mkdirSync(fullPath, { recursive: true });
+    console.log(`Created directory: ${fullPath}`);
   }
 });
+
+// WARNING: Render doesn't have persistent storage for local files
+// Files uploaded will be lost on redeploy. Consider using cloud storage like:
+// - AWS S3
+// - Cloudinary
+// - Render Disk (if available)
+console.log('⚠️  WARNING: Local file uploads are not persistent on Render. Files will be lost on redeploy.');
 
 // Storage configuration for save files
 const saveStorage = multer.diskStorage({

@@ -50,7 +50,7 @@ const authController = {
 
         // Ensure "Membro" tag exists and assign it to new user
         db.run(
-          `INSERT OR IGNORE INTO tags (name, color, icon, description) VALUES (?, ?, ?, ?)`,
+          `INSERT INTO tags (name, color, icon, description) VALUES (?, ?, ?, ?) ON CONFLICT (name) DO NOTHING`,
           ['Membro', '#10b981', 'user', 'Membro da comunidade'],
           function(err) {
             if (err) {
@@ -184,7 +184,12 @@ const authController = {
               ORDER BY ut.assigned_at DESC`,
               [req.user.id],
               (err, tags) => {
-                if (err) tags = [];
+                if (err) {
+                  console.error('Failed to fetch user tags in getProfile:', err);
+                  tags = [];
+                }
+
+                console.log('User tags returned:', tags);
 
                 res.json({
                   ...user,

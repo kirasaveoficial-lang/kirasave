@@ -343,7 +343,7 @@ const savesController = {
     }
 
     db.run(
-      'INSERT OR REPLACE INTO ratings (user_id, save_id, rating) VALUES (?, ?, ?)',
+      'INSERT INTO ratings (user_id, save_id, rating) VALUES (?, ?, ?) ON CONFLICT (user_id, save_id) DO UPDATE SET rating = EXCLUDED.rating',
       [req.user.id, id, rating],
       function(err) {
         if (err) {

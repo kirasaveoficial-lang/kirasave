@@ -842,7 +842,7 @@ const adminController = {
 
       // Assign tag to user
       db.run(
-        'INSERT OR IGNORE INTO user_tags (user_id, tag_id) VALUES (?, ?)',
+        'INSERT INTO user_tags (user_id, tag_id) VALUES (?, ?) ON CONFLICT (user_id, tag_id) DO NOTHING',
         [id, tagId],
         function(err) {
           if (err) {

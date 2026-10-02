@@ -193,12 +193,16 @@ const userController = {
   updateAvatar: (req, res) => {
     uploadAvatar(req, res, (err) => {
       if (err) {
+        console.error('Avatar upload error:', err);
         return res.status(400).json({ error: err.message });
       }
 
       if (!req.file) {
+        console.error('No file uploaded');
         return res.status(400).json({ error: 'Avatar file is required' });
       }
+
+      console.log('Avatar uploaded:', req.file);
 
       // Use relative path for frontend access
       const avatarPath = '/uploads/avatars/' + req.file.filename;
@@ -208,9 +212,11 @@ const userController = {
         [avatarPath, req.user.id],
         function(err) {
           if (err) {
+            console.error('Failed to update avatar in database:', err);
             return res.status(500).json({ error: 'Failed to update avatar' });
           }
 
+          console.log('Avatar updated successfully:', avatarPath);
           res.json({ message: 'Avatar updated successfully', avatar: avatarPath });
         }
       );
