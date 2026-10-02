@@ -907,6 +907,21 @@ const adminController = {
         res.json({ message: 'Tag removed successfully' });
       }
     );
+  },
+
+  getOrphanSaves: (req, res) => {
+    db.all('SELECT id, title, file_path, created_at FROM saves WHERE file_path NOT LIKE \'http%\'', (err, saves) => {
+      if (err) {
+        return res.status(500).json({ error: 'Failed to fetch saves' });
+      }
+
+      const orphanSaves = saves.filter(save => {
+        const filePath = path.join(__dirname, '../../public/uploads/saves/', save.file_path);
+        return !fs.existsSync(filePath);
+      });
+
+      res.json({ orphan_saves: orphanSaves, total: orphanSaves.length });
+    });
   }
 };
 

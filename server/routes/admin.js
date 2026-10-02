@@ -24,6 +24,7 @@ router.delete('/games/:id', authenticateToken, requireAdmin, adminController.del
 
 // All saves management
 router.get('/saves/all', authenticateToken, requireAdmin, adminController.getAllSaves);
+router.get('/saves/orphan', authenticateToken, requireAdmin, adminController.getOrphanSaves);
 
 // Warning system
 router.post('/warnings', authenticateToken, requireAdmin, adminController.giveWarning);
