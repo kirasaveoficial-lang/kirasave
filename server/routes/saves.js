@@ -11,7 +11,7 @@ router.post('/', authenticateToken, savesController.createSave);
 router.post('/:id/images', authenticateToken, savesController.uploadSaveImages);
 router.put('/:id/image', authenticateToken, savesController.updateSaveImage);
 router.delete('/:id/images/:imageId', authenticateToken, savesController.deleteSaveImage);
-router.get('/:id/download', authenticateToken, savesController.downloadSave);
+router.get('/:id/download', savesController.downloadSave); // Changed: no auth required for download
 router.post('/:id/rate', authenticateToken, savesController.rateSave);
 router.post('/:id/favorite', authenticateToken, savesController.toggleFavorite);
 router.post('/:id/comments', authenticateToken, savesController.addComment);

@@ -362,7 +362,7 @@ const savesController = {
 
       // Redirect to the external download URL (Mediafire, Mega, etc.)
       console.log('Redirecting to download URL:', save.file_path);
-      res.redirect(save.file_path);
+      return res.redirect(302, save.file_path);
     });
   },
 

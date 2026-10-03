@@ -599,7 +599,7 @@ function renderUploadPage() {
                 </div>
 
                 <div class="glass-card p-5">
-                    <form id="upload-form" enctype="multipart/form-data">
+                    <form id="upload-form">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                             <div>
                                 <label class="block text-gray-300 text-xs mb-1.5">Título do Save</label>
@@ -3410,36 +3410,10 @@ async function downloadSave(id) {
             return;
         }
 
-        // Open the download endpoint in a new tab - browser will follow the redirect
+        // Open the download endpoint directly - browser will follow the redirect
         const downloadUrl = `${API_BASE}/saves/${saveId}/download`;
         console.log('Opening download URL:', downloadUrl);
-
-        // If logged in, need to pass token
-        if (state.token) {
-            // Use fetch to trigger the download with auth, then handle redirect
-            const response = await fetch(`${API_BASE}/saves/${saveId}/download`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${state.token}`
-                }
-            });
-
-            console.log('Download response status:', response.status);
-
-            if (!response.ok) {
-                const error = await response.json();
-                console.error('Download error:', error);
-                throw new Error(error.error || 'Download failed');
-            }
-
-            // The response should be a redirect, open the final URL
-            const finalUrl = response.url || response.headers.get('Location') || downloadUrl;
-            console.log('Opening final URL:', finalUrl);
-            window.open(finalUrl, '_blank');
-        } else {
-            // Not logged in, open directly
-            window.open(downloadUrl, '_blank');
-        }
+        window.open(downloadUrl, '_blank');
 
         console.log('Download initiated successfully');
         showToast('Redirecionando para download...', 'success');
@@ -4233,10 +4207,12 @@ async function downloadPendingSave(id) {
 
         const response = await fetch(`${API_BASE}/admin/saves/${saveId}/download`, {
             method: 'GET',
-            headers
+            headers,
+            redirect: 'follow' // Follow redirects automatically
         });
 
         console.log('Admin download response status:', response.status);
+        console.log('Admin download response URL:', response.url);
 
         if (!response.ok) {
             const error = await response.json();
@@ -4244,10 +4220,8 @@ async function downloadPendingSave(id) {
             throw new Error(error.error || 'Download failed');
         }
 
-        // The response should be a redirect, open the final URL
-        const finalUrl = response.url || response.headers.get('Location') || `${API_BASE}/admin/saves/${saveId}/download`;
-        console.log('Opening final URL:', finalUrl);
-        window.open(finalUrl, '_blank');
+        // Open the final redirected URL in new tab
+        window.open(response.url, '_blank');
 
         console.log('Admin download initiated successfully');
         showToast('Redirecionando para download...', 'success');
