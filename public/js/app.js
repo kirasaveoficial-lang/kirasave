@@ -2100,13 +2100,18 @@ function renderSaveDetails(save) {
                     <h3 class="font-bold mb-3 text-sm">Autor</h3>
                     <div class="flex items-center gap-3 mb-3">
                         <div class="relative">
-                            <img src="${save.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(save.username)}&background=8b5cf6&color=fff&size=200&bold=true`}" alt="${save.username}" class="avatar w-12 h-12 ${hasVipTag ? `vip-${vipType}` : ''}" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(save.username)}&background=8b5cf6&color=fff&size=200&bold=true'">
+                            <img src="${save.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(save.username)}&background=8b5cf6&color=fff&size=200&bold=true`}" alt="${save.username}"
+                                 class="avatar w-12 h-12 ${hasVipTag ? `vip-${vipType}` : ''}"
+                                 style="${hasVipTag ? `border: 2px solid ${vipTag.color}; box-shadow: 0 0 15px ${vipTag.color}80, 0 0 30px ${vipTag.color}40;` : ''}"
+                                 onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(save.username)}&background=8b5cf6&color=fff&size=200&bold=true'">
                             <div class="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-gray-800 ${isOnline ? 'bg-green-500' : 'bg-gray-500'}"></div>
                         </div>
                         <div>
                             <div class="username-glow-wrapper">
-                                <div class="username-particles"></div>
-                                <a href="/profile/${save.user_id}" class="font-semibold hover:text-purple-400 text-sm username-glow ${hasVipTag ? `vip-${vipType}` : ''}">${save.username}</a>
+                                <div class="username-particles" data-color="${hasVipTag ? vipTag.color : '#8b5cf6'}"></div>
+                                <a href="/profile/${save.user_id}"
+                                   class="font-semibold hover:text-purple-400 text-sm username-glow ${hasVipTag ? `vip-${vipType}` : ''}"
+                                   style="${hasVipTag ? `color: ${vipTag.color}; text-shadow: 0 0 10px ${vipTag.color}80, 0 0 20px ${vipTag.color}60, 0 0 30px ${vipTag.color}40;` : ''}">${save.username}</a>
                             </div>
                             <p class="text-gray-400 text-xs">${lastSeenText}</p>
                         </div>
@@ -3541,14 +3546,17 @@ function renderComment(comment, currentUser) {
                 <div class="comment-header">
                     <div class="flex items-center gap-3">
                         <a href="/profile/${comment.user_id}" class="cursor-pointer">
-                            <img src="${comment.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(comment.username)}&background=8b5cf6&color=fff&size=200&bold=true`}" alt="${comment.username}" class="avatar w-10 h-10 hover:opacity-80 transition-opacity">
+                            <img src="${comment.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(comment.username)}&background=8b5cf6&color=fff&size=200&bold=true`}" alt="${comment.username}"
+                                 class="avatar w-10 h-10 hover:opacity-80 transition-opacity"
+                                 style="${hasVipTag ? `border: 2px solid ${vipTag.color}; box-shadow: 0 0 15px ${vipTag.color}80, 0 0 30px ${vipTag.color}40;` : ''}">
                         </a>
                         <div>
                             <div class="flex items-center gap-2 flex-wrap">
                                 <a href="/profile/${comment.user_id}" class="cursor-pointer">
                                     <div class="username-glow-wrapper">
-                                        <div class="username-particles"></div>
-                                        <span class="font-semibold text-sm ${hasVipTag ? `username-glow vip-${vipType}` : 'username-glow'} hover:opacity-80 transition-opacity">${comment.username}</span>
+                                        <div class="username-particles" data-color="${hasVipTag ? vipTag.color : '#8b5cf6'}"></div>
+                                        <span class="font-semibold text-sm ${hasVipTag ? `username-glow vip-${vipType}` : 'username-glow'} hover:opacity-80 transition-opacity"
+                                              style="${hasVipTag ? `color: ${vipTag.color}; text-shadow: 0 0 10px ${vipTag.color}80, 0 0 20px ${vipTag.color}60, 0 0 30px ${vipTag.color}40;` : ''}">${comment.username}</span>
                                     </div>
                                 </a>
                                 ${hasVipTag ? `
@@ -3994,15 +4002,8 @@ function createCommentUsernameParticles() {
     const particleContainers = document.querySelectorAll('.comment-card .username-particles');
 
     particleContainers.forEach(container => {
-        // Determine VIP type from parent username element
-        const usernameElement = container.closest('.username-glow-wrapper')?.querySelector('.username-glow');
-        let vipType = '';
-        if (usernameElement) {
-            if (usernameElement.classList.contains('vip-gold')) vipType = 'gold';
-            else if (usernameElement.classList.contains('vip-platinum')) vipType = 'platinum';
-            else if (usernameElement.classList.contains('vip-diamond')) vipType = 'diamond';
-            else if (usernameElement.classList.contains('vip-extreme')) vipType = 'extreme';
-        }
+        // Get color from data-color attribute
+        const color = container.dataset.color || '#8b5cf6';
 
         // Clear existing particles
         container.innerHTML = '';
@@ -4012,10 +4013,9 @@ function createCommentUsernameParticles() {
             const particle = document.createElement('div');
             particle.className = 'username-particle';
 
-            // Add VIP class if applicable
-            if (vipType) {
-                particle.classList.add(`vip-${vipType}`);
-            }
+            // Apply color to particle
+            particle.style.background = color;
+            particle.style.boxShadow = `0 0 6px ${color}80, 0 0 12px ${color}40`;
 
             // Random position around the username (more concentrated)
             const angle = (i / 8) * Math.PI * 2;
