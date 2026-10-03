@@ -1594,8 +1594,14 @@ function setupSettingsForms() {
 
     if (usernameInput && usernameInfo && state.user.usernameChangeInfo) {
         const { canChangeUsername, daysUntilChange } = state.user.usernameChangeInfo;
+        const isAdmin = state.user.is_admin;
 
-        if (!canChangeUsername) {
+        // Admins can always change username
+        if (isAdmin) {
+            usernameInput.disabled = false;
+            usernameInput.classList.remove('opacity-50', 'cursor-not-allowed');
+            usernameInfo.innerHTML = `<span class="text-purple-400"><i class="fas fa-shield-alt mr-1"></i>Administrador - você pode alterar seu nome de usuário a qualquer momento</span>`;
+        } else if (!canChangeUsername) {
             usernameInput.disabled = true;
             usernameInput.classList.add('opacity-50', 'cursor-not-allowed');
             usernameInfo.innerHTML = `<span class="text-yellow-400"><i class="fas fa-clock mr-1"></i>Você pode alterar seu nome de usuário em ${daysUntilChange} dia(s)</span>`;

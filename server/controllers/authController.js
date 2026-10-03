@@ -151,12 +151,13 @@ const authController = {
 
         // Calculate days until username can be changed
         // Only enforce 7-day restriction AFTER first username change
+        // Admins can change username anytime
         let canChangeUsername = true;
         let daysUntilChange = 0;
         let lastChangeDate = user.username_changed_at || user.created_at;
 
-        if (user.username_changed_at) {
-          // User has changed username before - enforce 7-day restriction
+        if (user.username_changed_at && !user.is_admin) {
+          // User has changed username before - enforce 7-day restriction (except for admins)
           const lastChange = new Date(user.username_changed_at);
           const now = new Date();
           const daysSinceChange = Math.floor((now - lastChange) / (1000 * 60 * 60 * 24));
@@ -164,6 +165,7 @@ const authController = {
           canChangeUsername = daysSinceChange >= 7;
         }
         // If username_changed_at is NULL, user can change freely (first time)
+        // Admins can always change username regardless of username_changed_at
 
         // Get user stats
         db.get(
@@ -218,14 +220,14 @@ const authController = {
 
     // Check if username is being changed
     if (username && username !== req.user.username) {
-      // Get current user to check username_changed_at
-      db.get('SELECT username_changed_at FROM users WHERE id = ?', [req.user.id], (err, user) => {
+      // Get current user to check username_changed_at and is_admin
+      db.get('SELECT username_changed_at, is_admin FROM users WHERE id = ?', [req.user.id], (err, user) => {
         if (err || !user) {
           return res.status(404).json({ error: 'User not found' });
         }
 
-        // Only enforce 7-day restriction if user has changed username before
-        if (user.username_changed_at) {
+        // Only enforce 7-day restriction if user has changed username before AND is not admin
+        if (user.username_changed_at && !user.is_admin) {
           const lastChange = new Date(user.username_changed_at);
           const now = new Date();
           const daysSinceChange = Math.floor((now - lastChange) / (1000 * 60 * 60 * 24));
