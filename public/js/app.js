@@ -3542,36 +3542,32 @@ function renderComment(comment, currentUser) {
 
     return `
         <div class="comment-item" id="comment-${comment.id}" data-comment-id="${comment.id}">
+            <a href="/profile/${comment.user_id}" class="cursor-pointer">
+                <img src="${comment.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(comment.username)}&background=8b5cf6&color=fff&size=200&bold=true`}" alt="${comment.username}"
+                     class="avatar w-10 h-10 hover:opacity-80 transition-opacity"
+                     style="${hasVipTag ? `border: 2px solid ${vipTag.color}; box-shadow: 0 0 15px ${vipTag.color}80, 0 0 30px ${vipTag.color}40;` : ''}">
+            </a>
             <div class="comment-card" style="--comment-border-color: ${hasVipTag ? vipTag.color : 'rgba(139, 92, 246, 0.3)'};">
                 <div class="comment-header">
-                    <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-2 flex-wrap">
                         <a href="/profile/${comment.user_id}" class="cursor-pointer">
-                            <img src="${comment.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(comment.username)}&background=8b5cf6&color=fff&size=200&bold=true`}" alt="${comment.username}"
-                                 class="avatar w-10 h-10 hover:opacity-80 transition-opacity"
-                                 style="${hasVipTag ? `border: 2px solid ${vipTag.color}; box-shadow: 0 0 15px ${vipTag.color}80, 0 0 30px ${vipTag.color}40;` : ''}">
-                        </a>
-                        <div class="flex-1">
-                            <div class="flex items-center gap-2 flex-wrap">
-                                <a href="/profile/${comment.user_id}" class="cursor-pointer">
-                                    <div class="username-glow-wrapper">
-                                        <div class="username-particles" data-color="${hasVipTag ? vipTag.color : '#8b5cf6'}"></div>
-                                        <span class="font-semibold text-sm ${hasVipTag ? `username-glow vip-${vipType}` : 'username-glow'} hover:opacity-80 transition-opacity"
-                                              style="${hasVipTag ? `color: ${vipTag.color}; text-shadow: 0 0 10px ${vipTag.color}80, 0 0 20px ${vipTag.color}60, 0 0 30px ${vipTag.color}40;` : ''}">${comment.username}</span>
-                                    </div>
-                                </a>
-                                ${hasVipTag ? `
-                                    <span class="text-xs px-2 py-0.5 rounded-full vip-tag-${vipType}"
-                                          style="background: linear-gradient(135deg, ${vipTag.color}40, ${vipTag.color}20); color: ${vipTag.color}; border: 1px solid ${vipTag.color}60;">
-                                        <i class="fas fa-${vipTag.icon || 'star'} mr-1"></i>${vipTag.name}
-                                    </span>
-                                ` : ''}
-                                ${comment.is_edited ? `
-                                    <span class="edit-badge-header">
-                                        <i class="fas fa-edit mr-1"></i>Editado
-                                    </span>
-                                ` : ''}
+                            <div class="username-glow-wrapper">
+                                <div class="username-particles" data-color="${hasVipTag ? vipTag.color : '#8b5cf6'}"></div>
+                                <span class="font-semibold text-sm ${hasVipTag ? `username-glow vip-${vipType}` : 'username-glow'} hover:opacity-80 transition-opacity"
+                                      style="${hasVipTag ? `color: ${vipTag.color}; text-shadow: 0 0 10px ${vipTag.color}80, 0 0 20px ${vipTag.color}60, 0 0 30px ${vipTag.color}40;` : ''}">${comment.username}</span>
                             </div>
-                        </div>
+                        </a>
+                        ${hasVipTag ? `
+                            <span class="text-xs px-2 py-0.5 rounded-full vip-tag-${vipType}"
+                                  style="background: linear-gradient(135deg, ${vipTag.color}40, ${vipTag.color}20); color: ${vipTag.color}; border: 1px solid ${vipTag.color}60;">
+                                <i class="fas fa-${vipTag.icon || 'star'} mr-1"></i>${vipTag.name}
+                            </span>
+                        ` : ''}
+                        ${comment.is_edited ? `
+                            <span class="edit-badge-header">
+                                <i class="fas fa-edit mr-1"></i>Editado
+                            </span>
+                        ` : ''}
                     </div>
                     ${canDelete || canEdit ? `
                         <div class="comment-actions">
