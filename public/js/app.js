@@ -3542,7 +3542,7 @@ function renderComment(comment, currentUser) {
 
     return `
         <div class="comment-item" id="comment-${comment.id}" data-comment-id="${comment.id}">
-            <div class="comment-card">
+            <div class="comment-card" style="--comment-border-color: ${hasVipTag ? vipTag.color : 'rgba(139, 92, 246, 0.3)'};">
                 <div class="comment-header">
                     <div class="flex items-center gap-3">
                         <a href="/profile/${comment.user_id}" class="cursor-pointer">
@@ -3550,7 +3550,7 @@ function renderComment(comment, currentUser) {
                                  class="avatar w-10 h-10 hover:opacity-80 transition-opacity"
                                  style="${hasVipTag ? `border: 2px solid ${vipTag.color}; box-shadow: 0 0 15px ${vipTag.color}80, 0 0 30px ${vipTag.color}40;` : ''}">
                         </a>
-                        <div>
+                        <div class="flex-1">
                             <div class="flex items-center gap-2 flex-wrap">
                                 <a href="/profile/${comment.user_id}" class="cursor-pointer">
                                     <div class="username-glow-wrapper">
@@ -3597,30 +3597,32 @@ function renderComment(comment, currentUser) {
                     <p class="text-gray-300 text-sm">${comment.content}</p>
                 </div>
                 <div class="comment-footer">
-                    <div class="flex items-center gap-4">
-                        ${currentUser ? `
-                            <button onclick="likeComment(${comment.id})" class="comment-action-btn ${comment.user_liked ? 'liked' : ''}">
-                                <i class="fas fa-heart"></i>
-                                <span>${comment.likes_count || 0}</span>
-                            </button>
-                        ` : `
-                            <button onclick="showLoginRequiredMessage()" class="comment-action-btn opacity-50">
-                                <i class="fas fa-heart"></i>
-                                <span>${comment.likes_count || 0}</span>
-                            </button>
-                        `}
-                        ${currentUser ? `
-                            <button onclick="showReplyForm(${comment.id})" class="comment-action-btn">
-                                <i class="fas fa-reply"></i>
-                                <span>Responder</span>
-                            </button>
-                        ` : `
-                            <button onclick="showLoginRequiredMessage()" class="comment-action-btn opacity-50">
-                                <i class="fas fa-lock"></i>
-                                <span>Responder</span>
-                            </button>
-                        `}
-                        <span class="text-gray-500 text-xs ml-auto">${formattedDate}</span>
+                    <div class="flex items-center justify-between w-full">
+                        <span class="text-gray-500 text-xs">${formattedDate}</span>
+                        <div class="flex items-center gap-4">
+                            ${currentUser ? `
+                                <button onclick="likeComment(${comment.id})" class="comment-action-btn ${comment.user_liked ? 'liked' : ''}">
+                                    <i class="fas fa-heart"></i>
+                                    <span>${comment.likes_count || 0}</span>
+                                </button>
+                            ` : `
+                                <button onclick="showLoginRequiredMessage()" class="comment-action-btn opacity-50">
+                                    <i class="fas fa-heart"></i>
+                                    <span>${comment.likes_count || 0}</span>
+                                </button>
+                            `}
+                            ${currentUser ? `
+                                <button onclick="showReplyForm(${comment.id})" class="comment-action-btn">
+                                    <i class="fas fa-reply"></i>
+                                    <span>Responder</span>
+                                </button>
+                            ` : `
+                                <button onclick="showLoginRequiredMessage()" class="comment-action-btn opacity-50">
+                                    <i class="fas fa-lock"></i>
+                                    <span>Responder</span>
+                                </button>
+                            `}
+                        </div>
                     </div>
                 </div>
             </div>

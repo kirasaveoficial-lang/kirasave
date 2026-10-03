@@ -1609,56 +1609,84 @@ input[type="datetime-local"] {
 .comment-card {
     background: rgba(31, 41, 55, 0.6);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(139, 92, 246, 0.15);
-    border-radius: 12px;
+    border: 2px solid rgba(139, 92, 246, 0.3);
+    border-radius: 20px;
     padding: 16px;
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
+    box-shadow: 0 0 15px rgba(139, 92, 246, 0.2);
 }
 
 .comment-card::before {
     content: '';
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.5), transparent);
+    inset: -2px;
+    border-radius: 20px;
+    background: linear-gradient(45deg, rgba(139, 92, 246, 0.4), rgba(139, 92, 246, 0.1), rgba(139, 92, 246, 0.4));
     opacity: 0;
     transition: opacity 0.3s ease;
+    z-index: -1;
+    animation: glowRotate 3s linear infinite;
+}
+
+@keyframes glowRotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
 .comment-card:hover {
     background: rgba(31, 41, 55, 0.8);
-    border-color: rgba(139, 92, 246, 0.3);
-    transform: translateX(5px);
+    transform: translateY(-3px);
+    box-shadow: 0 0 25px rgba(139, 92, 246, 0.4);
 }
 
 .comment-card:hover::before {
     opacity: 1;
 }
 
+/* Dynamic comment card border colors based on user tag */
+.comment-card[data-border-color] {
+    border-color: var(--comment-border-color, rgba(139, 92, 246, 0.3));
+    box-shadow: 0 0 15px var(--comment-border-color, rgba(139, 92, 246, 0.2));
+}
+
+.comment-card[data-border-color]::before {
+    background: linear-gradient(45deg, var(--comment-border-color, rgba(139, 92, 246, 0.4)), var(--comment-border-color, rgba(139, 92, 246, 0.1)), var(--comment-border-color, rgba(139, 92, 246, 0.4)));
+}
+
+.comment-card[data-border-color]:hover {
+    box-shadow: 0 0 25px var(--comment-border-color, rgba(139, 92, 246, 0.4));
+}
+
+.comment-item {
+    margin-bottom: 16px;
+}
+
 .comment-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
     margin-bottom: 12px;
+    gap: 12px;
 }
 
 .comment-content {
     margin-bottom: 12px;
     line-height: 1.6;
+    text-align: right;
 }
 
 .comment-content p {
     color: #e5e7eb;
     word-wrap: break-word;
+    margin: 0;
 }
 
 .comment-footer {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 16px;
     padding-top: 12px;
     border-top: 1px solid rgba(139, 92, 246, 0.1);
