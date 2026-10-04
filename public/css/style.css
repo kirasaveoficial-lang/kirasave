@@ -1661,8 +1661,15 @@ input[type="datetime-local"] {
 }
 
 .comment-item {
-    margin-bottom: 20px;
+    margin-bottom: 24px;
     position: relative;
+    padding-bottom: 24px;
+    border-bottom: 1px solid rgba(139, 92, 246, 0.15);
+}
+
+.comment-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
 }
 
 /* Avatar positioned left like forum style */
