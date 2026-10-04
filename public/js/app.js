@@ -13,8 +13,11 @@ let heartbeatInterval = null;
 
 // ===== Utility Functions =====
 function getTimeAgo(dateString) {
+    // Parse the date assuming it's in UTC from the database
     const date = new Date(dateString);
     const now = new Date();
+
+    // Calculate difference in seconds
     const seconds = Math.floor((now - date) / 1000);
 
     if (seconds < 60) return 'agora mesmo';
@@ -24,7 +27,16 @@ function getTimeAgo(dateString) {
     if (hours < 24) return `${hours}h atrás`;
     const days = Math.floor(hours / 24);
     if (days < 7) return `${days}d atrás`;
-    return date.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+
+    // For dates older than 7 days, show formatted date in Brazil timezone
+    return date.toLocaleDateString('pt-BR', {
+        timeZone: 'America/Sao_Paulo',
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
 }
 
 // ===== API Base URL =====
@@ -439,15 +451,15 @@ function renderHomePage() {
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div class="glass-card p-4 text-center">
-                        <div class="text-2xl font-bold gradient-text counter" data-target="1000">0</div>
+                        <div class="text-2xl font-bold gradient-text stat-number" id="stat-saves">0</div>
                         <div class="text-gray-400 mt-1 text-sm">Saves Compartilhados</div>
                     </div>
                     <div class="glass-card p-4 text-center">
-                        <div class="text-2xl font-bold gradient-text counter" data-target="5000">0</div>
+                        <div class="text-2xl font-bold gradient-text stat-number" id="stat-users">0</div>
                         <div class="text-gray-400 mt-1 text-sm">Usuários Ativos</div>
                     </div>
                     <div class="glass-card p-4 text-center">
-                        <div class="text-2xl font-bold gradient-text counter" data-target="50000">0</div>
+                        <div class="text-2xl font-bold gradient-text stat-number" id="stat-downloads">0</div>
                         <div class="text-gray-400 mt-1 text-sm">Downloads Realizados</div>
                     </div>
                 </div>
@@ -488,14 +500,33 @@ function renderHomePage() {
     // Initialize particles
     createParticles();
 
-    // Animate counters
-    animateCounters();
+    // Load real statistics from database
+    loadHomeStats();
 
     // Load featured saves
     loadFeaturedSaves();
 
     // Load popular games
     loadPopularGames();
+}
+
+async function loadHomeStats() {
+    try {
+        const response = await fetch('/api/stats');
+        const stats = await response.json();
+
+        if (stats) {
+            document.getElementById('stat-saves').textContent = stats.total_saves || 0;
+            document.getElementById('stat-users').textContent = stats.active_users || 0;
+            document.getElementById('stat-downloads').textContent = stats.total_downloads || 0;
+        }
+    } catch (error) {
+        console.error('Error loading home stats:', error);
+        // Fallback to 0 if API fails
+        document.getElementById('stat-saves').textContent = '0';
+        document.getElementById('stat-users').textContent = '0';
+        document.getElementById('stat-downloads').textContent = '0';
+    }
 }
 
 function renderSavesPage() {
