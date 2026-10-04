@@ -3658,7 +3658,7 @@ function renderComment(comment, currentUser) {
             <!-- Reply Form -->
             ${currentUser ? `
             <div id="reply-form-${comment.id}" class="reply-form hidden">
-                <form onsubmit="addReply(event, ${comment.id}, ${comment.save_id})" class="mt-3">
+                <form onsubmit="addReply(event, ${comment.id}, ${comment.save_id})">
                     <div class="flex gap-3">
                         <img src="${currentUser.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.username)}&background=8b5cf6&color=fff&size=200&bold=true`}" alt="${currentUser.username}" class="avatar w-10 h-10">
                         <div class="flex-1">
@@ -3678,9 +3678,9 @@ function renderComment(comment, currentUser) {
                 <div class="replies-container hidden">
                     ${comment.replies.map(reply => renderComment(reply, currentUser)).join('')}
                 </div>
-                <button onclick="toggleReplies(${comment.id})" class="text-xs text-purple-400 hover:text-purple-300 mt-2 flex items-center gap-1 transition-colors">
+                <button onclick="toggleReplies(${comment.id})" class="reply-toggle-btn" id="reply-toggle-${comment.id}">
                     <i class="fas fa-chevron-down"></i>
-                    Mostrar ${comment.replies.length} ${comment.replies.length === 1 ? 'resposta' : 'respostas'}
+                    Mostrar <span class="reply-count-badge">${comment.replies.length}</span> ${comment.replies.length === 1 ? 'resposta' : 'respostas'}
                 </button>
             ` : ''}
         </div>
@@ -3741,24 +3741,38 @@ function hideReplyForm(commentId) {
 // Toggle replies visibility
 function toggleReplies(commentId) {
     const repliesContainer = document.querySelector(`[data-comment-id="${commentId}"] .replies-container`);
-    const toggleButton = document.querySelector(`[data-comment-id="${commentId}"] button[onclick="toggleReplies(${commentId})"]`);
+    const toggleButton = document.getElementById(`reply-toggle-${commentId}`);
     
-    if (repliesContainer) {
+    if (repliesContainer && toggleButton) {
         const isHidden = repliesContainer.classList.contains('hidden');
         repliesContainer.classList.toggle('hidden');
+        toggleButton.classList.toggle('expanded');
         
-        if (toggleButton) {
-            const icon = toggleButton.querySelector('i');
-            const text = toggleButton.childNodes[2]; // Text node
-            if (isHidden) {
-                icon.classList.remove('fa-chevron-up');
-                icon.classList.add('fa-chevron-down');
-                text.textContent = `Mostrar ${repliesContainer.children.length} ${repliesContainer.children.length === 1 ? 'resposta' : 'respostas'}`;
-            } else {
-                icon.classList.remove('fa-chevron-down');
-                icon.classList.add('fa-chevron-up');
-                text.textContent = 'Ocultar';
-            }
+        const icon = toggleButton.querySelector('i');
+        const badge = toggleButton.querySelector('.reply-count-badge');
+        const textParts = toggleButton.childNodes;
+        
+        if (isHidden) {
+            // Mostrando respostas
+            icon.classList.remove('fa-chevron-down');
+            icon.classList.add('fa-chevron-up');
+            
+            // Atualizar texto para "Ocultar"
+            toggleButton.innerHTML = `
+                <i class="fas fa-chevron-up"></i>
+                Ocultar <span class="reply-count-badge">${badge.textContent}</span> respostas
+            `;
+        } else {
+            // Ocultando respostas
+            icon.classList.remove('fa-chevron-up');
+            icon.classList.add('fa-chevron-down');
+            
+            // Atualizar texto para "Mostrar"
+            const replyCount = parseInt(badge.textContent);
+            toggleButton.innerHTML = `
+                <i class="fas fa-chevron-down"></i>
+                Mostrar <span class="reply-count-badge">${replyCount}</span> ${replyCount === 1 ? 'resposta' : 'respostas'}
+            `;
         }
     }
 }

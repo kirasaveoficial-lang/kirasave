@@ -1764,6 +1764,8 @@ input[type="datetime-local"] {
 .comment-content {
     margin-bottom: 12px;
     line-height: 1.6;
+    font-size: 15px;
+    color: #e5e7eb;
 }
 
 .comment-content p {
@@ -1854,10 +1856,103 @@ input[type="datetime-local"] {
     animation: slideIn 0.3s ease-out;
 }
 
+/* Nested reply cards - slightly smaller and lighter */
+.replies-container .comment-card {
+    background: linear-gradient(135deg, rgba(23, 33, 51, 0.95), rgba(17, 24, 39, 0.97));
+    border-color: rgba(139, 92, 246, 0.2);
+    padding: 14px 16px;
+    margin-left: 56px;
+}
+
+.replies-container .comment-card::before {
+    height: 2px;
+    opacity: 0.7;
+}
+
+.replies-container .comment-item .avatar {
+    width: 40px;
+    height: 40px;
+}
+
+.replies-container .comment-header {
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+}
+
+.replies-container .comment-content {
+    font-size: 14px;
+    line-height: 1.5;
+    color: #d1d5db;
+}
+
+.replies-container .comment-footer {
+    font-size: 12px;
+}
+
+/* Replies toggle button styling */
+.reply-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    background: rgba(139, 92, 246, 0.08);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 8px;
+    color: #a78bfa;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 12px;
+}
+
+.reply-toggle-btn:hover {
+    background: rgba(139, 92, 246, 0.15);
+    border-color: rgba(139, 92, 246, 0.4);
+    color: #c4b5fd;
+    transform: translateY(-1px);
+}
+
+.reply-toggle-btn:active {
+    transform: translateY(0);
+}
+
+.reply-toggle-btn i {
+    transition: transform 0.3s ease;
+}
+
+.reply-toggle-btn.expanded i {
+    transform: rotate(180deg);
+}
+
+/* Reply count badge */
+.reply-count-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 12px;
+    margin-left: 4px;
+}
+
 @media (max-width: 768px) {
     .replies-container {
         margin-left: 16px;
         padding-left: 16px;
+    }
+
+    .replies-container .comment-card {
+        margin-left: 48px;
+        padding: 12px 14px;
+    }
+
+    .replies-container .comment-item .avatar {
+        width: 36px;
+        height: 36px;
     }
 }
 
@@ -1869,6 +1964,22 @@ input[type="datetime-local"] {
         border-top: 1px solid rgba(139, 92, 246, 0.15);
         margin-top: 12px;
         padding-top: 12px;
+    }
+
+    .replies-container .comment-card {
+        margin-left: 0;
+        padding: 12px;
+    }
+
+    .replies-container .comment-item .avatar {
+        position: relative;
+        left: auto;
+        top: auto;
+        margin-bottom: 10px;
+    }
+
+    .replies-container .comment-item {
+        padding-left: 0;
     }
 }
 
@@ -1884,11 +1995,58 @@ input[type="datetime-local"] {
 }
 
 .reply-form {
-    background: rgba(139, 92, 246, 0.05);
+    background: linear-gradient(135deg, rgba(23, 33, 51, 0.95), rgba(17, 24, 39, 0.97));
     border: 1px solid rgba(139, 92, 246, 0.2);
-    border-radius: 12px;
-    padding: 16px;
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-top: 12px;
     animation: fadeIn 0.3s ease-out;
+}
+
+.reply-form .input-field {
+    background: rgba(23, 33, 51, 0.8);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 8px;
+    padding: 10px 12px;
+    color: #e5e7eb;
+    font-size: 13px;
+    transition: all 0.2s ease;
+}
+
+.reply-form .input-field:focus {
+    outline: none;
+    border-color: #8b5cf6;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+}
+
+.reply-form .avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: 2px solid rgba(139, 92, 246, 0.2);
+}
+
+/* Empty state for replies */
+.replies-empty {
+    text-align: center;
+    padding: 16px;
+    color: #9ca3af;
+    font-size: 13px;
+    font-style: italic;
+}
+
+/* Reply highlight animation */
+@keyframes highlightReply {
+    0% {
+        background: rgba(139, 92, 246, 0.3);
+    }
+    100% {
+        background: transparent;
+    }
+}
+
+.comment-item.highlighted {
+    animation: highlightReply 2s ease-out;
 }
 
 @keyframes fadeIn {
