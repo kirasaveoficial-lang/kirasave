@@ -3766,11 +3766,11 @@ async function editComment(commentId) {
     contentElement.innerHTML = `
         <textarea id="edit-textarea-${commentId}" class="edit-textarea" rows="3">${currentContent}</textarea>
         <div class="edit-actions">
-            <button onclick="saveEdit(${commentId})" class="btn-primary text-xs mr-2">
-                <i class="fas fa-check mr-1"></i>Salvar
+            <button onclick="saveEdit(${commentId})" class="btn-primary">
+                <i class="fas fa-check"></i>Salvar
             </button>
-            <button onclick="cancelEdit(${commentId})" class="text-gray-400 hover:text-white text-xs">
-                <i class="fas fa-times mr-1"></i>Cancelar
+            <button onclick="cancelEdit(${commentId})" class="btn-secondary">
+                <i class="fas fa-times"></i>Cancelar
             </button>
         </div>
     `;
