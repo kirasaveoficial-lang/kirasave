@@ -3660,12 +3660,12 @@ function renderComment(comment, currentUser) {
             <div id="reply-form-${comment.id}" class="reply-form hidden">
                 <form onsubmit="addReply(event, ${comment.id}, ${comment.save_id})" class="mt-3">
                     <div class="flex gap-3">
-                        <img src="${currentUser.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.username)}&background=8b5cf6&color=fff&size=200&bold=true`}" alt="${currentUser.username}" class="avatar w-8 h-8">
+                        <img src="${currentUser.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.username)}&background=8b5cf6&color=fff&size=200&bold=true`}" alt="${currentUser.username}" class="avatar w-10 h-10">
                         <div class="flex-1">
                             <textarea name="content" rows="2" class="input-field mb-2 text-sm" placeholder="Escreva uma resposta..." required></textarea>
                             <div class="flex justify-end gap-2">
-                                <button type="button" onclick="hideReplyForm(${comment.id})" class="text-gray-400 hover:text-white text-xs px-3 py-1">Cancelar</button>
-                                <button type="submit" class="btn-primary text-xs">Responder</button>
+                                <button type="button" onclick="hideReplyForm(${comment.id})" class="text-gray-400 hover:text-white text-xs px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors">Cancelar</button>
+                                <button type="submit" class="btn-primary text-xs px-4 py-2">Responder</button>
                             </div>
                         </div>
                     </div>
@@ -3675,9 +3675,13 @@ function renderComment(comment, currentUser) {
 
             <!-- Nested Replies -->
             ${comment.replies && comment.replies.length > 0 ? `
-                <div class="replies-container">
+                <div class="replies-container hidden">
                     ${comment.replies.map(reply => renderComment(reply, currentUser)).join('')}
                 </div>
+                <button onclick="toggleReplies(${comment.id})" class="text-xs text-purple-400 hover:text-purple-300 mt-2 flex items-center gap-1 transition-colors">
+                    <i class="fas fa-chevron-down"></i>
+                    Mostrar ${comment.replies.length} ${comment.replies.length === 1 ? 'resposta' : 'respostas'}
+                </button>
             ` : ''}
         </div>
     `;
@@ -3734,11 +3738,46 @@ function hideReplyForm(commentId) {
     form.querySelector('textarea').value = '';
 }
 
+// Toggle replies visibility
+function toggleReplies(commentId) {
+    const repliesContainer = document.querySelector(`[data-comment-id="${commentId}"] .replies-container`);
+    const toggleButton = document.querySelector(`[data-comment-id="${commentId}"] button[onclick="toggleReplies(${commentId})"]`);
+    
+    if (repliesContainer) {
+        const isHidden = repliesContainer.classList.contains('hidden');
+        repliesContainer.classList.toggle('hidden');
+        
+        if (toggleButton) {
+            const icon = toggleButton.querySelector('i');
+            const text = toggleButton.childNodes[2]; // Text node
+            if (isHidden) {
+                icon.classList.remove('fa-chevron-up');
+                icon.classList.add('fa-chevron-down');
+                text.textContent = `Mostrar ${repliesContainer.children.length} ${repliesContainer.children.length === 1 ? 'resposta' : 'respostas'}`;
+            } else {
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
+                text.textContent = 'Ocultar';
+            }
+        }
+    }
+}
+
 // Add reply to comment
 async function addReply(e, parentId, saveId) {
     e.preventDefault();
     const form = e.target;
     const content = form.querySelector('textarea').value;
+    const submitButton = form.querySelector('button[type="submit"]');
+
+    if (!content.trim()) {
+        showToast('Por favor, escreva uma resposta', 'error');
+        return;
+    }
+
+    // Disable button and show loading
+    submitButton.disabled = true;
+    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
 
     try {
         await apiCall(`/saves/${saveId}/comments`, {
@@ -3749,6 +3788,9 @@ async function addReply(e, parentId, saveId) {
         hideReplyForm(parentId);
         loadSaveDetails(saveId);
     } catch (error) {
+        // Re-enable button on error
+        submitButton.disabled = false;
+        submitButton.innerHTML = 'Responder';
         // Error handled in apiCall
     }
 }
@@ -3759,24 +3801,27 @@ async function deleteComment(commentId) {
     const menu = document.getElementById(`comment-menu-${commentId}`);
     if (menu) menu.classList.add('hidden');
 
-    try {
-        // Add fade out animation
-        const commentElement = document.querySelector(`[data-comment-id="${commentId}"]`);
-        commentElement.style.transition = 'all 0.3s ease';
-        commentElement.style.opacity = '0';
-        commentElement.style.transform = 'translateX(-20px)';
+    // Show confirmation dialog
+    if (confirm('Tem certeza que deseja excluir este comentário? Esta ação não pode ser desfeita.')) {
+        try {
+            // Add fade out animation
+            const commentElement = document.querySelector(`[data-comment-id="${commentId}"]`);
+            commentElement.style.transition = 'all 0.3s ease';
+            commentElement.style.opacity = '0';
+            commentElement.style.transform = 'translateX(-20px)';
 
-        setTimeout(async () => {
-            await apiCall(`/saves/comments/${commentId}`, {
-                method: 'DELETE'
-            });
-            showToast('Comentário excluído!', 'success');
-            const currentPath = window.location.pathname;
-            const id = currentPath.split('/')[2];
-            loadSaveDetails(id);
-        }, 300);
-    } catch (error) {
-        // Error handled in apiCall
+            setTimeout(async () => {
+                await apiCall(`/saves/comments/${commentId}`, {
+                    method: 'DELETE'
+                });
+                showToast('Comentário excluído!', 'success');
+                const currentPath = window.location.pathname;
+                const id = currentPath.split('/')[2];
+                loadSaveDetails(id);
+            }, 300);
+        } catch (error) {
+            // Error handled in apiCall
+        }
     }
 }
 
@@ -3797,7 +3842,7 @@ async function editComment(commentId) {
     contentElement.innerHTML = `
         <textarea id="edit-textarea-${commentId}" class="edit-textarea" rows="3">${currentContent}</textarea>
         <div class="edit-actions">
-            <button onclick="saveEdit(${commentId})" class="btn-primary">
+            <button id="save-edit-${commentId}" onclick="saveEdit(${commentId})" class="btn-primary">
                 <i class="fas fa-check"></i>Salvar
             </button>
             <button onclick="cancelEdit(${commentId})" class="btn-secondary">
@@ -3815,12 +3860,17 @@ async function editComment(commentId) {
 // Save edited comment
 async function saveEdit(commentId) {
     const textarea = document.getElementById(`edit-textarea-${commentId}`);
+    const saveButton = document.getElementById(`save-edit-${commentId}`);
     const newContent = textarea.value.trim();
 
     if (!newContent) {
         showToast('O comentário não pode estar vazio', 'error');
         return;
     }
+
+    // Disable button and show loading
+    saveButton.disabled = true;
+    saveButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
 
     try {
         await apiCall(`/saves/comments/${commentId}`, {
@@ -3832,6 +3882,9 @@ async function saveEdit(commentId) {
         const id = currentPath.split('/')[2];
         loadSaveDetails(id);
     } catch (error) {
+        // Re-enable button on error
+        saveButton.disabled = false;
+        saveButton.innerHTML = '<i class="fas fa-check"></i>Salvar';
         // Error handled in apiCall
     }
 }
