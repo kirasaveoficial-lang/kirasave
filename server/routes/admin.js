@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const adminController = require('../controllers/adminController');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
+const { uploadGameCoverCloudinary } = require('../middleware/uploadCloudinary');
 
 router.get('/dashboard', authenticateToken, requireAdmin, adminController.getDashboardStats);
 router.get('/saves/pending', authenticateToken, requireAdmin, adminController.getPendingSaves);
@@ -20,6 +21,7 @@ router.get('/activity-logs', authenticateToken, requireAdmin, adminController.ge
 router.get('/games', authenticateToken, requireAdmin, adminController.getGames);
 router.post('/games', authenticateToken, requireAdmin, adminController.createGame);
 router.put('/games/:id', authenticateToken, requireAdmin, adminController.updateGame);
+router.post('/games/:id/image', authenticateToken, requireAdmin, uploadGameCoverCloudinary.single('image'), adminController.uploadGameImage);
 router.delete('/games/:id', authenticateToken, requireAdmin, adminController.deleteGame);
 
 // All saves management

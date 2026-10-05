@@ -38,10 +38,32 @@ const imageStorage = new CloudinaryStorage({
   }
 });
 
+// Storage for game cover images
+const gameCoverStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'kira-save/game-covers',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
+    resource_type: 'image',
+    transformation: [
+      { width: 400, height: 600, crop: 'limit' }
+    ],
+    public_id: (req, file) => {
+      const timestamp = Date.now();
+      const random = Math.floor(Math.random() * 10000);
+      return `game-cover-${timestamp}-${random}`;
+    }
+  }
+});
+
 const uploadAvatarCloudinary = multer({ storage: avatarStorage }).single('avatar');
 const uploadImagesCloudinary = multer({ storage: imageStorage }).array('images', 10);
+const uploadCloudinary = multer({ storage: imageStorage }).single('image');
+const uploadGameCoverCloudinary = multer({ storage: gameCoverStorage }).single('image');
 
 module.exports = {
   uploadAvatarCloudinary,
-  uploadImagesCloudinary
+  uploadImagesCloudinary,
+  uploadCloudinary,
+  uploadGameCoverCloudinary
 };

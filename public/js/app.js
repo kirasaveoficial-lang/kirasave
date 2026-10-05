@@ -1187,6 +1187,11 @@ function renderAdminGamesPage() {
                                 <input type="url" id="game-cover" class="input-field text-sm" placeholder="https://...">
                             </div>
                             <div>
+                                <label class="block text-gray-300 text-xs mb-1">OU Upload de Imagem</label>
+                                <input type="file" id="game-image-upload" accept="image/*" class="text-xs text-gray-400" onchange="uploadGameImage(this)">
+                                <input type="hidden" id="game-image-uploaded">
+                            </div>
+                            <div>
                                 <label class="block text-gray-300 text-xs mb-1">Descrição</label>
                                 <textarea id="game-description" rows="3" class="input-field text-sm" placeholder="Descrição do jogo..."></textarea>
                             </div>
@@ -2677,7 +2682,7 @@ async function handleGameSubmit(e) {
     const gameId = document.getElementById('game-id').value;
     const name = document.getElementById('game-name').value;
     const platform = document.getElementById('game-platform').value;
-    const cover_image = document.getElementById('game-cover').value;
+    const cover_image = document.getElementById('game-image-uploaded').value || document.getElementById('game-cover').value;
     const description = document.getElementById('game-description').value;
 
     try {
@@ -2707,6 +2712,7 @@ async function handleGameSubmit(e) {
 function resetGameForm() {
     document.getElementById('game-form').reset();
     document.getElementById('game-id').value = '';
+    document.getElementById('game-image-uploaded').value = '';
     document.getElementById('game-form-title').textContent = 'Adicionar Novo Jogo';
 }
 
@@ -2751,6 +2757,9 @@ function renderGamesList(games) {
             <div class="flex gap-1">
                 <button onclick="editGame(${game.id})" class="text-purple-400 hover:text-purple-300 p-1.5 text-xs" title="Editar">
                     <i class="fas fa-edit"></i>
+                </button>
+                <button onclick="editGameImage(${game.id})" class="text-blue-400 hover:text-blue-300 p-1.5 text-xs" title="Alterar Imagem">
+                    <i class="fas fa-image"></i>
                 </button>
                 <button onclick="deleteGame(${game.id})" class="text-red-400 hover:text-red-300 p-1.5 text-xs" title="Excluir">
                     <i class="fas fa-trash"></i>
@@ -2959,6 +2968,27 @@ async function editGame(id) {
     }
 }
 
+async function editGameImage(id) {
+    const game = state.adminGames.find(g => g.id === id);
+    if (!game) {
+        showToast('Jogo não encontrado', 'error');
+        return;
+    }
+
+    // Set the game ID in the form and show upload section
+    document.getElementById('game-id').value = id;
+    document.getElementById('game-name').value = game.name;
+    document.getElementById('game-platform').value = game.platform || '';
+    document.getElementById('game-cover').value = game.cover_image || '';
+    document.getElementById('game-description').value = game.description || '';
+    document.getElementById('game-form-title').textContent = 'Alterar Imagem do Jogo';
+
+    // Scroll to form
+    document.getElementById('game-form').scrollIntoView({ behavior: 'smooth' });
+
+    showToast('Selecione uma nova imagem para o jogo', 'info');
+}
+
 async function deleteGame(id) {
     if (!confirm('Tem certeza que deseja deletar este jogo? Isso não afetará saves existentes.')) return;
 
@@ -2969,6 +2999,46 @@ async function deleteGame(id) {
         await loadGames();
     } catch (error) {
         showToast(error.message || 'Erro ao deletar jogo', 'error');
+    }
+}
+
+async function uploadGameImage(input) {
+    const file = input.files[0];
+    if (!file) return;
+
+    const gameId = document.getElementById('game-id').value;
+    if (!gameId) {
+        showToast('Salve o jogo primeiro antes de fazer upload da imagem', 'error');
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+        const response = await fetch(`/api/admin/games/${gameId}/image`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || 'Erro ao fazer upload');
+        }
+
+        showToast('Imagem enviada com sucesso!', 'success');
+        document.getElementById('game-cover').value = data.cover_image;
+        document.getElementById('game-image-uploaded').value = data.cover_image;
+        input.value = ''; // Clear file input
+
+        // Reload games list
+        loadGamesForAdmin();
+    } catch (error) {
+        showToast(error.message || 'Erro ao fazer upload da imagem', 'error');
     }
 }
 

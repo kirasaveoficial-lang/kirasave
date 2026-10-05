@@ -597,6 +597,33 @@ const adminController = {
     );
   },
 
+  uploadGameImage: (req, res) => {
+    const { id } = req.params;
+
+    if (!req.file) {
+      return res.status(400).json({ error: 'No image file provided' });
+    }
+
+    // Using Cloudinary URL from multer-storage-cloudinary
+    const imageUrl = req.file.path;
+
+    db.run(
+      'UPDATE games SET cover_image = ? WHERE id = ?',
+      [imageUrl, id],
+      function(err) {
+        if (err) {
+          return res.status(500).json({ error: 'Failed to update game image' });
+        }
+
+        if (this.changes === 0) {
+          return res.status(404).json({ error: 'Game not found' });
+        }
+
+        res.json({ message: 'Game image updated successfully', cover_image: imageUrl });
+      }
+    );
+  },
+
   deleteGame: (req, res) => {
     const { id } = req.params;
 
