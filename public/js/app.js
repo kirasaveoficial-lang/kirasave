@@ -4500,9 +4500,13 @@ function filterAllSaves(page = 1) {
 }
 
 async function deleteSaveAdmin(id) {
+    if (!confirm('Tem certeza que deseja excluir este save? Esta ação não pode ser desfeita e excluirá todos os comentários, downloads e dados relacionados.')) {
+        return;
+    }
+
     try {
         await apiCall(`/admin/saves/${id}`, { method: 'DELETE' });
-        showToast('Save excluído!', 'success');
+        showToast('Save excluído com sucesso!', 'success');
         loadAllSaves();
     } catch (error) {
         // Error handled in apiCall

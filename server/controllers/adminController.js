@@ -218,12 +218,59 @@ const adminController = {
   deleteSave: (req, res) => {
     const { id } = req.params;
 
-    db.run('DELETE FROM saves WHERE id = ?', [id], function(err) {
+    console.log('=== DELETE SAVE REQUEST ===');
+    console.log('Save ID:', id);
+
+    // First, get the save to know what to delete
+    db.get('SELECT * FROM saves WHERE id = ?', [id], (err, save) => {
       if (err) {
-        return res.status(500).json({ error: 'Failed to delete save' });
+        console.error('Error fetching save:', err);
+        return res.status(500).json({ error: 'Failed to fetch save' });
       }
 
-      res.json({ message: 'Save deleted successfully' });
+      if (!save) {
+        console.error('Save not found:', id);
+        return res.status(404).json({ error: 'Save not found' });
+      }
+
+      console.log('Save found:', save);
+
+      // Delete related data in the correct order to avoid foreign key constraints
+      // 1. Delete save images
+      db.run('DELETE FROM save_images WHERE save_id = ?', [id], (err) => {
+        if (err) console.error('Error deleting save images:', err);
+
+        // 2. Delete comments for this save
+        db.run('DELETE FROM comments WHERE save_id = ?', [id], (err) => {
+          if (err) console.error('Error deleting comments:', err);
+
+          // 3. Delete favorites for this save
+          db.run('DELETE FROM favorites WHERE save_id = ?', [id], (err) => {
+            if (err) console.error('Error deleting favorites:', err);
+
+            // 4. Delete downloads for this save
+            db.run('DELETE FROM downloads WHERE save_id = ?', [id], (err) => {
+              if (err) console.error('Error deleting downloads:', err);
+
+              // 5. Delete reports for this save
+              db.run('DELETE FROM reports WHERE save_id = ?', [id], (err) => {
+                if (err) console.error('Error deleting reports:', err);
+
+                // 6. Finally, delete the save itself
+                db.run('DELETE FROM saves WHERE id = ?', [id], function(err) {
+                  if (err) {
+                    console.error('Error deleting save:', err);
+                    return res.status(500).json({ error: 'Failed to delete save' });
+                  }
+
+                  console.log('Save deleted successfully, rows affected:', this.changes);
+                  res.json({ message: 'Save deleted successfully' });
+                });
+              });
+            });
+          });
+        });
+      });
     });
   },
 
