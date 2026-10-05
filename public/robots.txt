@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://kirasave.online/sitemap.xml
+
+# Block admin areas
+Disallow: /admin
+Disallow: /api/
+
+# Block upload form (no need to index)
+Disallow: /upload
+
+# Block profile pages (optional, can remove if you want them indexed)
+Disallow: /profile
