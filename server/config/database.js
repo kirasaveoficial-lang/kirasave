@@ -548,6 +548,87 @@ function initializeSQLiteTables(db) {
       )
     `);
 
+    // Marketplace - Reviews table
+    db.run(`
+      CREATE TABLE IF NOT EXISTS reviews (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        product_id INTEGER NOT NULL,
+        buyer_id INTEGER NOT NULL,
+        seller_id INTEGER NOT NULL,
+        rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+        comment TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+        FOREIGN KEY (buyer_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (seller_id) REFERENCES users(id) ON DELETE CASCADE,
+        UNIQUE(product_id, buyer_id)
+      )
+    `);
+
+    // Marketplace - Coupons table
+    db.run(`
+      CREATE TABLE IF NOT EXISTS coupons (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        code TEXT UNIQUE NOT NULL,
+        discount_type TEXT NOT NULL,
+        discount_value REAL NOT NULL,
+        min_purchase REAL DEFAULT 0,
+        max_uses INTEGER,
+        current_uses INTEGER DEFAULT 0,
+        valid_from DATETIME DEFAULT CURRENT_TIMESTAMP,
+        valid_until DATETIME,
+        status TEXT DEFAULT 'active',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Marketplace - Wallet table
+    db.run(`
+      CREATE TABLE IF NOT EXISTS wallet (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL UNIQUE,
+        available_balance REAL DEFAULT 0.00,
+        pending_balance REAL DEFAULT 0.00,
+        total_earned REAL DEFAULT 0.00,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      )
+    `);
+
+    // Marketplace - Transactions table
+    db.run(`
+      CREATE TABLE IF NOT EXISTS transactions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        wallet_id INTEGER NOT NULL,
+        type TEXT NOT NULL,
+        amount REAL NOT NULL,
+        balance_after REAL NOT NULL,
+        description TEXT,
+        reference_id INTEGER,
+        reference_type TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (wallet_id) REFERENCES wallet(id) ON DELETE CASCADE
+      )
+    `);
+
+    // Marketplace - Withdrawals table
+    db.run(`
+      CREATE TABLE IF NOT EXISTS withdrawals (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        amount REAL NOT NULL,
+        method TEXT NOT NULL,
+        method_details TEXT,
+        status TEXT DEFAULT 'pending',
+        admin_notes TEXT,
+        processed_at DATETIME,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      )
+    `);
+
     console.log('SQLite tables initialized');
   });
 }
@@ -832,6 +913,77 @@ async function initializePostgreSQLTables(pool) {
         UNIQUE(user_id, product_id),
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
         FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+      )`,
+
+      // Marketplace - Reviews table
+      `CREATE TABLE IF NOT EXISTS reviews (
+        id SERIAL PRIMARY KEY,
+        product_id INTEGER NOT NULL,
+        buyer_id INTEGER NOT NULL,
+        seller_id INTEGER NOT NULL,
+        rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+        comment TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+        FOREIGN KEY (buyer_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (seller_id) REFERENCES users(id) ON DELETE CASCADE,
+        UNIQUE(product_id, buyer_id)
+      )`,
+
+      // Marketplace - Coupons table
+      `CREATE TABLE IF NOT EXISTS coupons (
+        id SERIAL PRIMARY KEY,
+        code VARCHAR(50) UNIQUE NOT NULL,
+        discount_type VARCHAR(20) NOT NULL,
+        discount_value DECIMAL(10, 2) NOT NULL,
+        min_purchase DECIMAL(10, 2) DEFAULT 0,
+        max_uses INTEGER,
+        current_uses INTEGER DEFAULT 0,
+        valid_from TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        valid_until TIMESTAMP,
+        status VARCHAR(20) DEFAULT 'active',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )`,
+
+      // Marketplace - Wallet table
+      `CREATE TABLE IF NOT EXISTS wallet (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL UNIQUE,
+        available_balance DECIMAL(10, 2) DEFAULT 0.00,
+        pending_balance DECIMAL(10, 2) DEFAULT 0.00,
+        total_earned DECIMAL(10, 2) DEFAULT 0.00,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      )`,
+
+      // Marketplace - Transactions table
+      `CREATE TABLE IF NOT EXISTS transactions (
+        id SERIAL PRIMARY KEY,
+        wallet_id INTEGER NOT NULL,
+        type VARCHAR(20) NOT NULL,
+        amount DECIMAL(10, 2) NOT NULL,
+        balance_after DECIMAL(10, 2) NOT NULL,
+        description TEXT,
+        reference_id INTEGER,
+        reference_type VARCHAR(50),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (wallet_id) REFERENCES wallet(id) ON DELETE CASCADE
+      )`,
+
+      // Marketplace - Withdrawals table
+      `CREATE TABLE IF NOT EXISTS withdrawals (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL,
+        amount DECIMAL(10, 2) NOT NULL,
+        method VARCHAR(50) NOT NULL,
+        method_details TEXT,
+        status VARCHAR(20) DEFAULT 'pending',
+        admin_notes TEXT,
+        processed_at TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
       )`
     ];
 

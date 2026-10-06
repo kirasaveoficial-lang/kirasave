@@ -128,6 +128,10 @@ function setupNavigation() {
                             <i class="fas fa-cog w-5 text-center group-hover:rotate-90 transition-transform"></i>
                             <span>Configurações</span>
                         </a>
+                        <a href="/marketplace/wallet" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-purple-500/20 hover:text-purple-400 transition-all group">
+                            <i class="fas fa-wallet w-5 text-center group-hover:scale-110 transition-transform"></i>
+                            <span>Carteira</span>
+                        </a>
                         ${state.user.is_admin ? `
                         <a href="/admin" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-purple-500/20 hover:text-purple-400 transition-all group">
                             <i class="fas fa-shield-alt w-5 text-center group-hover:scale-110 transition-transform"></i>
@@ -278,6 +282,27 @@ function router() {
             break;
         case '/marketplace/seller-orders':
             renderMarketplaceSellerOrdersPage();
+            break;
+        case '/marketplace/wallet':
+            renderMarketplaceWalletPage();
+            break;
+        case '/admin/marketplace':
+            renderAdminMarketplaceDashboard();
+            break;
+        case '/admin/marketplace/products':
+            renderAdminMarketplaceProducts();
+            break;
+        case '/admin/marketplace/orders':
+            renderAdminMarketplaceOrders();
+            break;
+        case '/admin/marketplace/payments':
+            renderAdminMarketplacePayments();
+            break;
+        case '/admin/marketplace/withdrawals':
+            renderAdminMarketplaceWithdrawals();
+            break;
+        case '/admin/marketplace/coupons':
+            renderAdminMarketplaceCoupons();
             break;
         default:
             if (path.startsWith('/marketplace/')) {
@@ -5764,6 +5789,716 @@ function renderSellerOrders(orders) {
             </div>
         </div>
     `).join('');
+}
+
+function renderMarketplaceWalletPage() {
+    if (!state.user) {
+        window.location.href = '/login';
+        return;
+    }
+
+    const app = document.getElementById('app');
+    app.innerHTML = `
+        <section class="py-6">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="mb-6">
+                    <a href="/marketplace" class="text-gray-400 hover:text-purple-400 transition-colors text-sm">
+                        <i class="fas fa-arrow-left mr-2"></i>Voltar ao Marketplace
+                    </a>
+                </div>
+                <h1 class="text-2xl font-bold mb-6 font-['Space_Grotesk']">
+                    <span class="gradient-text">Minha Carteira</span>
+                </h1>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div class="glass-card p-6">
+                        <p class="text-gray-400 text-sm mb-2">Saldo Disponível</p>
+                        <p id="wallet-available" class="text-3xl font-bold gradient-text">R$ 0,00</p>
+                    </div>
+                    <div class="glass-card p-6">
+                        <p class="text-gray-400 text-sm mb-2">Saldo Pendente</p>
+                        <p id="wallet-pending" class="text-3xl font-bold text-yellow-400">R$ 0,00</p>
+                    </div>
+                    <div class="glass-card p-6">
+                        <p class="text-gray-400 text-sm mb-2">Total Recebido</p>
+                        <p id="wallet-total" class="text-3xl font-bold text-green-400">R$ 0,00</p>
+                    </div>
+                </div>
+
+                <div class="glass-card p-6 mb-6">
+                    <h3 class="font-semibold text-white mb-4">Solicitar Saque</h3>
+                    <form id="withdrawal-form" class="space-y-4">
+                        <div>
+                            <label class="block text-gray-300 text-sm mb-2">Valor (R$)</label>
+                            <input type="number" id="withdrawal-amount" min="1" step="0.01" required class="input-field" placeholder="0.00">
+                        </div>
+                        <div>
+                            <label class="block text-gray-300 text-sm mb-2">Método</label>
+                            <select id="withdrawal-method" class="input-field">
+                                <option value="pix">PIX</option>
+                                <option value="bank_transfer">Transferência Bancária</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-gray-300 text-sm mb-2">Chave PIX / Dados Bancários</label>
+                            <textarea id="withdrawal-details" rows="3" required class="input-field" placeholder="Informe sua chave PIX ou dados bancários completos"></textarea>
+                        </div>
+                        <button type="submit" class="btn-primary w-full">Solicitar Saque</button>
+                    </form>
+                </div>
+
+                <div class="glass-card p-6">
+                    <h3 class="font-semibold text-white mb-4">Histórico de Transações</h3>
+                    <div id="wallet-transactions" class="space-y-2">
+                        <p class="text-gray-400 text-center py-4">Carregando...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    `;
+
+    loadWallet();
+    document.getElementById('withdrawal-form').addEventListener('submit', handleWithdrawal);
+}
+
+function renderAdminMarketplaceDashboard() {
+    if (!state.user || !state.user.is_admin) {
+        window.location.href = '/';
+        return;
+    }
+
+    const app = document.getElementById('app');
+    app.innerHTML = `
+        <section class="py-6">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="mb-6">
+                    <a href="/admin" class="text-gray-400 hover:text-purple-400 transition-colors text-sm">
+                        <i class="fas fa-arrow-left mr-2"></i>Voltar ao Admin
+                    </a>
+                </div>
+                <h1 class="text-2xl font-bold mb-6 font-['Space_Grotesk']">
+                    <span class="gradient-text">Marketplace Dashboard</span>
+                </h1>
+
+                <div id="marketplace-stats" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+                    <div class="glass-card p-4">
+                        <p class="text-gray-400 text-xs">Produtos</p>
+                        <p id="stat-products" class="text-2xl font-bold gradient-text">-</p>
+                    </div>
+                    <div class="glass-card p-4">
+                        <p class="text-gray-400 text-xs">Pendentes</p>
+                        <p id="stat-pending" class="text-2xl font-bold text-yellow-400">-</p>
+                    </div>
+                    <div class="glass-card p-4">
+                        <p class="text-gray-400 text-xs">Pedidos</p>
+                        <p id="stat-orders" class="text-2xl font-bold gradient-text">-</p>
+                    </div>
+                    <div class="glass-card p-4">
+                        <p class="text-gray-400 text-xs">Pagos</p>
+                        <p id="stat-paid" class="text-2xl font-bold text-green-400">-</p>
+                    </div>
+                    <div class="glass-card p-4">
+                        <p class="text-gray-400 text-xs">Receita</p>
+                        <p id="stat-revenue" class="text-2xl font-bold text-green-400">-</p>
+                    </div>
+                    <div class="glass-card p-4">
+                        <p class="text-gray-400 text-xs">Saques Pendentes</p>
+                        <p id="stat-withdrawals" class="text-2xl font-bold text-yellow-400">-</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <a href="/admin/marketplace/products" class="glass-card p-4 hover:border-purple-500/50 transition-all">
+                        <i class="fas fa-box text-2xl text-purple-400 mb-2"></i>
+                        <p class="font-semibold">Produtos</p>
+                        <p class="text-gray-400 text-sm">Gerenciar produtos</p>
+                    </a>
+                    <a href="/admin/marketplace/orders" class="glass-card p-4 hover:border-purple-500/50 transition-all">
+                        <i class="fas fa-shopping-cart text-2xl text-purple-400 mb-2"></i>
+                        <p class="font-semibold">Pedidos</p>
+                        <p class="text-gray-400 text-sm">Ver todos os pedidos</p>
+                    </a>
+                    <a href="/admin/marketplace/payments" class="glass-card p-4 hover:border-purple-500/50 transition-all">
+                        <i class="fas fa-credit-card text-2xl text-purple-400 mb-2"></i>
+                        <p class="font-semibold">Pagamentos</p>
+                        <p class="text-gray-400 text-sm">Gerenciar pagamentos</p>
+                    </a>
+                    <a href="/admin/marketplace/withdrawals" class="glass-card p-4 hover:border-purple-500/50 transition-all">
+                        <i class="fas fa-money-bill-wave text-2xl text-purple-400 mb-2"></i>
+                        <p class="font-semibold">Saques</p>
+                        <p class="text-gray-400 text-sm">Processar saques</p>
+                    </a>
+                </div>
+            </div>
+        </section>
+    `;
+
+    loadMarketplaceDashboardStats();
+}
+
+function renderAdminMarketplaceProducts() {
+    if (!state.user || !state.user.is_admin) {
+        window.location.href = '/';
+        return;
+    }
+
+    const app = document.getElementById('app');
+    app.innerHTML = `
+        <section class="py-6">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="mb-6">
+                    <a href="/admin/marketplace" class="text-gray-400 hover:text-purple-400 transition-colors text-sm">
+                        <i class="fas fa-arrow-left mr-2"></i>Voltar ao Dashboard
+                    </a>
+                </div>
+                <h1 class="text-2xl font-bold mb-6 font-['Space_Grotesk']">
+                    <span class="gradient-text">Gerenciar Produtos</span>
+                </h1>
+
+                <div class="glass-card p-3 mb-6">
+                    <div class="flex gap-4">
+                        <button onclick="loadAdminProducts('pending')" class="px-4 py-2 rounded-lg bg-yellow-500/20 text-yellow-400">Pendentes</button>
+                        <button onclick="loadAdminProducts('approved')" class="px-4 py-2 rounded-lg bg-gray-700 text-gray-300">Aprovados</button>
+                        <button onclick="loadAdminProducts('all')" class="px-4 py-2 rounded-lg bg-gray-700 text-gray-300">Todos</button>
+                    </div>
+                </div>
+
+                <div id="admin-products-list" class="space-y-4">
+                    <p class="text-gray-400 text-center py-4">Carregando...</p>
+                </div>
+            </div>
+        </section>
+    `;
+
+    loadAdminProducts('pending');
+}
+
+function renderAdminMarketplaceOrders() {
+    if (!state.user || !state.user.is_admin) {
+        window.location.href = '/';
+        return;
+    }
+
+    const app = document.getElementById('app');
+    app.innerHTML = `
+        <section class="py-6">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="mb-6">
+                    <a href="/admin/marketplace" class="text-gray-400 hover:text-purple-400 transition-colors text-sm">
+                        <i class="fas fa-arrow-left mr-2"></i>Voltar ao Dashboard
+                    </a>
+                </div>
+                <h1 class="text-2xl font-bold mb-6 font-['Space_Grotesk']">
+                    <span class="gradient-text">Gerenciar Pedidos</span>
+                </h1>
+
+                <div id="admin-orders-list" class="space-y-4">
+                    <p class="text-gray-400 text-center py-4">Carregando...</p>
+                </div>
+            </div>
+        </section>
+    `;
+
+    loadAdminOrders();
+}
+
+function renderAdminMarketplacePayments() {
+    if (!state.user || !state.user.is_admin) {
+        window.location.href = '/';
+        return;
+    }
+
+    const app = document.getElementById('app');
+    app.innerHTML = `
+        <section class="py-6">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="mb-6">
+                    <a href="/admin/marketplace" class="text-gray-400 hover:text-purple-400 transition-colors text-sm">
+                        <i class="fas fa-arrow-left mr-2"></i>Voltar ao Dashboard
+                    </a>
+                </div>
+                <h1 class="text-2xl font-bold mb-6 font-['Space_Grotesk']">
+                    <span class="gradient-text">Gerenciar Pagamentos</span>
+                </h1>
+
+                <div id="admin-payments-list" class="space-y-4">
+                    <p class="text-gray-400 text-center py-4">Carregando...</p>
+                </div>
+            </div>
+        </section>
+    `;
+
+    loadAdminPayments();
+}
+
+function renderAdminMarketplaceWithdrawals() {
+    if (!state.user || !state.user.is_admin) {
+        window.location.href = '/';
+        return;
+    }
+
+    const app = document.getElementById('app');
+    app.innerHTML = `
+        <section class="py-6">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="mb-6">
+                    <a href="/admin/marketplace" class="text-gray-400 hover:text-purple-400 transition-colors text-sm">
+                        <i class="fas fa-arrow-left mr-2"></i>Voltar ao Dashboard
+                    </a>
+                </div>
+                <h1 class="text-2xl font-bold mb-6 font-['Space_Grotesk']">
+                    <span class="gradient-text">Gerenciar Saques</span>
+                </h1>
+
+                <div id="admin-withdrawals-list" class="space-y-4">
+                    <p class="text-gray-400 text-center py-4">Carregando...</p>
+                </div>
+            </div>
+        </section>
+    `;
+
+    loadAdminWithdrawals();
+}
+
+function renderAdminMarketplaceCoupons() {
+    if (!state.user || !state.user.is_admin) {
+        window.location.href = '/';
+        return;
+    }
+
+    const app = document.getElementById('app');
+    app.innerHTML = `
+        <section class="py-6">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="mb-6">
+                    <a href="/admin/marketplace" class="text-gray-400 hover:text-purple-400 transition-colors text-sm">
+                        <i class="fas fa-arrow-left mr-2"></i>Voltar ao Dashboard
+                    </a>
+                </div>
+                <h1 class="text-2xl font-bold mb-6 font-['Space_Grotesk']">
+                    <span class="gradient-text">Gerenciar Cupons</span>
+                </h1>
+
+                <div class="glass-card p-6 mb-6">
+                    <h3 class="font-semibold text-white mb-4">Criar Novo Cupom</h3>
+                    <form id="create-coupon-form" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-gray-300 text-sm mb-2">Código</label>
+                            <input type="text" id="coupon-code" required class="input-field" placeholder="PROMO10">
+                        </div>
+                        <div>
+                            <label class="block text-gray-300 text-sm mb-2">Tipo de Desconto</label>
+                            <select id="coupon-type" class="input-field">
+                                <option value="percentage">Porcentagem</option>
+                                <option value="fixed">Valor Fixo</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-gray-300 text-sm mb-2">Valor do Desconto</label>
+                            <input type="number" id="coupon-value" required min="0" step="0.01" class="input-field" placeholder="10">
+                        </div>
+                        <div>
+                            <label class="block text-gray-300 text-sm mb-2">Compra Mínima (R$)</label>
+                            <input type="number" id="coupon-min" min="0" step="0.01" class="input-field" placeholder="0">
+                        </div>
+                        <div>
+                            <label class="block text-gray-300 text-sm mb-2">Máximo de Usos</label>
+                            <input type="number" id="coupon-max" min="1" class="input-field" placeholder="100">
+                        </div>
+                        <div>
+                            <label class="block text-gray-300 text-sm mb-2">Válido Até</label>
+                            <input type="date" id="coupon-valid-until" class="input-field">
+                        </div>
+                        <div class="md:col-span-2">
+                            <button type="submit" class="btn-primary w-full">Criar Cupom</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div id="admin-coupons-list" class="space-y-4">
+                    <p class="text-gray-400 text-center py-4">Carregando...</p>
+                </div>
+            </div>
+        </section>
+    `;
+
+    loadAdminCoupons();
+    document.getElementById('create-coupon-form').addEventListener('submit', handleCreateCoupon);
+}
+
+// ===== Advanced Marketplace Functions =====
+async function loadWallet() {
+    try {
+        const wallet = await apiCall('/marketplace-advanced/wallet');
+        document.getElementById('wallet-available').textContent = `R$ ${parseFloat(wallet.available_balance).toFixed(2)}`;
+        document.getElementById('wallet-pending').textContent = `R$ ${parseFloat(wallet.pending_balance).toFixed(2)}`;
+        document.getElementById('wallet-total').textContent = `R$ ${parseFloat(wallet.total_earned).toFixed(2)}`;
+        
+        const transactions = await apiCall('/marketplace-advanced/wallet/transactions');
+        renderWalletTransactions(transactions.transactions);
+    } catch (error) {
+        console.error('Failed to load wallet:', error);
+    }
+}
+
+function renderWalletTransactions(transactions) {
+    const container = document.getElementById('wallet-transactions');
+    if (!container) return;
+
+    if (transactions.length === 0) {
+        container.innerHTML = '<p class="text-gray-400 text-center py-4">Nenhuma transação</p>';
+        return;
+    }
+
+    container.innerHTML = transactions.map(tx => `
+        <div class="flex justify-between items-center p-3 bg-gray-800/50 rounded">
+            <div>
+                <p class="text-white text-sm">${tx.description || 'Transação'}</p>
+                <p class="text-gray-500 text-xs">${new Date(tx.created_at).toLocaleString()}</p>
+            </div>
+            <span class="${tx.type === 'credit' ? 'text-green-400' : 'text-red-400'} font-bold">
+                ${tx.type === 'credit' ? '+' : '-'}R$ ${parseFloat(tx.amount).toFixed(2)}
+            </span>
+        </div>
+    `).join('');
+}
+
+async function handleWithdrawal(e) {
+    e.preventDefault();
+    const amount = document.getElementById('withdrawal-amount').value;
+    const method = document.getElementById('withdrawal-method').value;
+    const details = document.getElementById('withdrawal-details').value;
+
+    try {
+        await apiCall('/marketplace-advanced/withdrawals', {
+            method: 'POST',
+            body: JSON.stringify({
+                amount,
+                method,
+                method_details: { key: details }
+            })
+        });
+        showToast('Saque solicitado com sucesso!', 'success');
+        loadWallet();
+    } catch (error) {
+        console.error('Failed to create withdrawal:', error);
+        showToast('Erro ao solicitar saque', 'error');
+    }
+}
+
+async function loadMarketplaceDashboardStats() {
+    try {
+        const data = await apiCall('/admin/marketplace/dashboard');
+        document.getElementById('stat-products').textContent = data.stats.total_products;
+        document.getElementById('stat-pending').textContent = data.stats.pending_products;
+        document.getElementById('stat-orders').textContent = data.stats.total_orders;
+        document.getElementById('stat-paid').textContent = data.stats.paid_orders;
+        document.getElementById('stat-revenue').textContent = `R$ ${parseFloat(data.stats.total_revenue).toFixed(2)}`;
+        document.getElementById('stat-withdrawals').textContent = data.stats.pending_withdrawals;
+    } catch (error) {
+        console.error('Failed to load dashboard stats:', error);
+    }
+}
+
+async function loadAdminProducts(status) {
+    try {
+        const data = await apiCall(`/admin/marketplace/products/all?status=${status}`);
+        renderAdminProductsList(data.products);
+    } catch (error) {
+        console.error('Failed to load admin products:', error);
+    }
+}
+
+function renderAdminProductsList(products) {
+    const container = document.getElementById('admin-products-list');
+    if (!container) return;
+
+    if (products.length === 0) {
+        container.innerHTML = '<p class="text-gray-400 text-center py-4">Nenhum produto encontrado</p>';
+        return;
+    }
+
+    container.innerHTML = products.map(product => `
+        <div class="glass-card p-4">
+            <div class="flex gap-4">
+                <div class="w-24 h-24 bg-gray-800 rounded overflow-hidden flex-shrink-0">
+                    ${product.image_url
+                        ? `<img src="${product.image_url}" alt="${product.name}" class="w-full h-full object-cover">`
+                        : `<div class="w-full h-full flex items-center justify-center text-gray-600">
+                            <i class="fas fa-image text-2xl"></i>
+                           </div>`
+                    }
+                </div>
+                <div class="flex-1">
+                    <h3 class="font-semibold text-white">${product.name}</h3>
+                    <p class="text-gray-400 text-sm">${product.seller_name}</p>
+                    <p class="text-purple-400 font-bold">R$ ${parseFloat(product.price).toFixed(2)}</p>
+                    <span class="text-xs px-2 py-1 rounded ${product.status === 'approved' ? 'bg-green-500/20 text-green-400' : product.status === 'pending' ? 'bg-yellow-500/20 text-yellow-400' : 'bg-red-500/20 text-red-400'}">
+                        ${product.status}
+                    </span>
+                </div>
+                <div class="flex gap-2">
+                    ${product.status === 'pending' ? `
+                        <button onclick="approveProduct(${product.id})" class="btn-secondary text-sm bg-green-500/20 text-green-400">Aprovar</button>
+                        <button onclick="rejectProduct(${product.id})" class="btn-secondary text-sm bg-red-500/20 text-red-400">Rejeitar</button>
+                    ` : ''}
+                    <button onclick="hideProduct(${product.id})" class="btn-secondary text-sm">Ocultar</button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+async function approveProduct(id) {
+    try {
+        await apiCall(`/admin/marketplace/products/${id}/approve`, { method: 'PUT' });
+        showToast('Produto aprovado!', 'success');
+        loadAdminProducts('pending');
+    } catch (error) {
+        showToast('Erro ao aprovar produto', 'error');
+    }
+}
+
+async function rejectProduct(id) {
+    const reason = prompt('Motivo da rejeição:');
+    if (!reason) return;
+
+    try {
+        await apiCall(`/admin/marketplace/products/${id}/reject`, {
+            method: 'PUT',
+            body: JSON.stringify({ reason })
+        });
+        showToast('Produto rejeitado!', 'success');
+        loadAdminProducts('pending');
+    } catch (error) {
+        showToast('Erro ao rejeitar produto', 'error');
+    }
+}
+
+async function hideProduct(id) {
+    try {
+        await apiCall(`/admin/marketplace/products/${id}/hide`, { method: 'PUT' });
+        showToast('Produto ocultado!', 'success');
+        loadAdminProducts('all');
+    } catch (error) {
+        showToast('Erro ao ocultar produto', 'error');
+    }
+}
+
+async function loadAdminOrders() {
+    try {
+        const data = await apiCall('/admin/marketplace/orders');
+        renderAdminOrdersList(data.orders);
+    } catch (error) {
+        console.error('Failed to load admin orders:', error);
+    }
+}
+
+function renderAdminOrdersList(orders) {
+    const container = document.getElementById('admin-orders-list');
+    if (!container) return;
+
+    if (orders.length === 0) {
+        container.innerHTML = '<p class="text-gray-400 text-center py-4">Nenhum pedido encontrado</p>';
+        return;
+    }
+
+    container.innerHTML = orders.map(order => `
+        <div class="glass-card p-4">
+            <div class="flex justify-between items-start mb-3">
+                <div>
+                    <h3 class="font-semibold text-white">Pedido #${order.id}</h3>
+                    <p class="text-gray-400 text-sm">${order.buyer_name}</p>
+                    <p class="text-gray-500 text-xs">${new Date(order.created_at).toLocaleString()}</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-purple-400 font-bold">R$ ${parseFloat(order.total_amount).toFixed(2)}</p>
+                    <span class="text-xs px-2 py-1 rounded ${order.payment_status === 'paid' ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'}">
+                        ${order.payment_status}
+                    </span>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                ${order.payment_status === 'pending' ? `
+                    <button onclick="markAsPaid(${order.id})" class="btn-secondary text-sm bg-green-500/20 text-green-400">Marcar como Pago</button>
+                ` : ''}
+            </div>
+        </div>
+    `).join('');
+}
+
+async function markAsPaid(id) {
+    try {
+        await apiCall(`/admin/marketplace/orders/${id}/payment-status`, {
+            method: 'PUT',
+            body: JSON.stringify({ payment_status: 'paid' })
+        });
+        showToast('Pagamento confirmado!', 'success');
+        loadAdminOrders();
+    } catch (error) {
+        showToast('Erro ao confirmar pagamento', 'error');
+    }
+}
+
+async function loadAdminPayments() {
+    try {
+        const data = await apiCall('/admin/marketplace/payments');
+        renderAdminPaymentsList(data.payments);
+    } catch (error) {
+        console.error('Failed to load admin payments:', error);
+    }
+}
+
+function renderAdminPaymentsList(payments) {
+    const container = document.getElementById('admin-payments-list');
+    if (!container) return;
+
+    if (payments.length === 0) {
+        container.innerHTML = '<p class="text-gray-400 text-center py-4">Nenhum pagamento encontrado</p>';
+        return;
+    }
+
+    container.innerHTML = payments.map(payment => `
+        <div class="glass-card p-4">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h3 class="font-semibold text-white">Pedido #${payment.id}</h3>
+                    <p class="text-gray-400 text-sm">${payment.buyer_name}</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-purple-400 font-bold">R$ ${parseFloat(payment.total_amount).toFixed(2)}</p>
+                    <span class="text-xs px-2 py-1 rounded ${payment.payment_status === 'paid' ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'}">
+                        ${payment.payment_status}
+                    </span>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+async function loadAdminWithdrawals() {
+    try {
+        const data = await apiCall('/marketplace-advanced/withdrawals/all');
+        renderAdminWithdrawalsList(data.withdrawals);
+    } catch (error) {
+        console.error('Failed to load admin withdrawals:', error);
+    }
+}
+
+function renderAdminWithdrawalsList(withdrawals) {
+    const container = document.getElementById('admin-withdrawals-list');
+    if (!container) return;
+
+    if (withdrawals.length === 0) {
+        container.innerHTML = '<p class="text-gray-400 text-center py-4">Nenhum saque encontrado</p>';
+        return;
+    }
+
+    container.innerHTML = withdrawals.map(withdrawal => `
+        <div class="glass-card p-4">
+            <div class="flex justify-between items-start mb-3">
+                <div>
+                    <h3 class="font-semibold text-white">${withdrawal.username}</h3>
+                    <p class="text-gray-400 text-sm">${withdrawal.method}</p>
+                    <p class="text-gray-500 text-xs">${new Date(withdrawal.created_at).toLocaleString()}</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-purple-400 font-bold">R$ ${parseFloat(withdrawal.amount).toFixed(2)}</p>
+                    <span class="text-xs px-2 py-1 rounded ${withdrawal.status === 'pending' ? 'bg-yellow-500/20 text-yellow-400' : withdrawal.status === 'approved' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}">
+                        ${withdrawal.status}
+                    </span>
+                </div>
+            </div>
+            ${withdrawal.status === 'pending' ? `
+                <div class="flex gap-2">
+                    <button onclick="processWithdrawal(${withdrawal.id}, 'approved')" class="btn-secondary text-sm bg-green-500/20 text-green-400">Aprovar</button>
+                    <button onclick="processWithdrawal(${withdrawal.id}, 'rejected')" class="btn-secondary text-sm bg-red-500/20 text-red-400">Rejeitar</button>
+                </div>
+            ` : ''}
+        </div>
+    `).join('');
+}
+
+async function processWithdrawal(id, status) {
+    const notes = prompt('Observações (opcional):');
+    
+    try {
+        await apiCall(`/marketplace-advanced/withdrawals/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify({ status, admin_notes: notes })
+        });
+        showToast(`Saque ${status === 'approved' ? 'aprovado' : 'rejeitado'}!`, 'success');
+        loadAdminWithdrawals();
+    } catch (error) {
+        showToast('Erro ao processar saque', 'error');
+    }
+}
+
+async function loadAdminCoupons() {
+    try {
+        const data = await apiCall('/marketplace-advanced/coupons');
+        renderAdminCouponsList(data.coupons);
+    } catch (error) {
+        console.error('Failed to load admin coupons:', error);
+    }
+}
+
+function renderAdminCouponsList(coupons) {
+    const container = document.getElementById('admin-coupons-list');
+    if (!container) return;
+
+    if (coupons.length === 0) {
+        container.innerHTML = '<p class="text-gray-400 text-center py-4">Nenhum cupom encontrado</p>';
+        return;
+    }
+
+    container.innerHTML = coupons.map(coupon => `
+        <div class="glass-card p-4">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h3 class="font-semibold text-white">${coupon.code}</h3>
+                    <p class="text-gray-400 text-sm">
+                        ${coupon.discount_type === 'percentage' ? coupon.discount_value + '%' : 'R$ ' + parseFloat(coupon.discount_value).toFixed(2)}
+                        ${coupon.min_purchase ? ' | Mínimo: R$ ' + parseFloat(coupon.min_purchase).toFixed(2) : ''}
+                    </p>
+                    <p class="text-gray-500 text-xs">Usos: ${coupon.current_uses}/${coupon.max_uses || '∞'}</p>
+                </div>
+                <span class="text-xs px-2 py-1 rounded ${coupon.status === 'active' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}">
+                    ${coupon.status}
+                </span>
+            </div>
+        </div>
+    `).join('');
+}
+
+async function handleCreateCoupon(e) {
+    e.preventDefault();
+    const code = document.getElementById('coupon-code').value;
+    const discount_type = document.getElementById('coupon-type').value;
+    const discount_value = document.getElementById('coupon-value').value;
+    const min_purchase = document.getElementById('coupon-min').value;
+    const max_uses = document.getElementById('coupon-max').value;
+    const valid_until = document.getElementById('coupon-valid-until').value;
+
+    try {
+        await apiCall('/marketplace-advanced/coupons', {
+            method: 'POST',
+            body: JSON.stringify({
+                code,
+                discount_type,
+                discount_value,
+                min_purchase,
+                max_uses,
+                valid_until
+            })
+        });
+        showToast('Cupom criado com sucesso!', 'success');
+        loadAdminCoupons();
+        e.target.reset();
+    } catch (error) {
+        console.error('Failed to create coupon:', error);
+        showToast('Erro ao criar cupom', 'error');
+    }
 }
 
 // ===== Toast Notifications =====

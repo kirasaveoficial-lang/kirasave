@@ -56,14 +56,32 @@ const gameCoverStorage = new CloudinaryStorage({
   }
 });
 
+// Storage for product files (digital products)
+const productFileStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'kira-save/product-files',
+    allowed_formats: ['zip', 'rar', '7z', 'pdf', 'doc', 'docx'],
+    resource_type: 'raw',
+    public_id: (req, file) => {
+      const timestamp = Date.now();
+      const random = Math.floor(Math.random() * 10000);
+      const ext = file.originalname.split('.').pop();
+      return `product-${timestamp}-${random}.${ext}`;
+    }
+  }
+});
+
 const uploadAvatarCloudinary = multer({ storage: avatarStorage }).single('avatar');
 const uploadImagesCloudinary = multer({ storage: imageStorage }).array('images', 10);
 const uploadCloudinary = multer({ storage: imageStorage }).single('image');
 const uploadGameCoverCloudinary = multer({ storage: gameCoverStorage }).single('image');
+const uploadProductFileCloudinary = multer({ storage: productFileStorage }).single('file');
 
 module.exports = {
   uploadAvatarCloudinary,
   uploadImagesCloudinary,
   uploadCloudinary,
-  uploadGameCoverCloudinary
+  uploadGameCoverCloudinary,
+  uploadProductFileCloudinary
 };

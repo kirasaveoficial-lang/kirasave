@@ -177,4 +177,32 @@ router.get('/marketplace/sell', (req, res) => {
   res.sendFile(path.join(__dirname, '../../public/index.html'));
 });
 
+router.get('/marketplace/wallet', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../public/index.html'));
+});
+
+router.get('/admin/marketplace', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../public/index.html'));
+});
+
+router.get('/admin/marketplace/products', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../public/index.html'));
+});
+
+router.get('/admin/marketplace/orders', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../public/index.html'));
+});
+
+router.get('/admin/marketplace/payments', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../public/index.html'));
+});
+
+router.get('/admin/marketplace/withdrawals', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../public/index.html'));
+});
+
+router.get('/admin/marketplace/coupons', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../public/index.html'));
+});
+
 module.exports = router;

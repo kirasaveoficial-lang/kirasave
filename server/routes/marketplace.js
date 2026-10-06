@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const marketplaceController = require('../controllers/marketplaceController');
 const { authenticateToken } = require('../middleware/auth');
+const { uploadProductFileCloudinary } = require('../middleware/uploadCloudinary');
 
 // Public routes
 router.get('/products', marketplaceController.getAllProducts);
@@ -12,6 +13,7 @@ router.post('/products', authenticateToken, marketplaceController.createProduct)
 router.get('/my-products', authenticateToken, marketplaceController.getSellerProducts);
 router.put('/products/:id', authenticateToken, marketplaceController.updateProduct);
 router.delete('/products/:id', authenticateToken, marketplaceController.deleteProduct);
+router.post('/products/:id/upload-file', authenticateToken, uploadProductFileCloudinary, marketplaceController.uploadProductFile);
 
 // Cart routes
 router.get('/cart', authenticateToken, marketplaceController.getCart);

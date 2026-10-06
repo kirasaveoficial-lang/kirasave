@@ -23,9 +23,12 @@ const marketplaceController = {
     if (sort === 'price_asc') orderBy = 'ORDER BY p.price ASC';
     if (sort === 'price_desc') orderBy = 'ORDER BY p.price DESC';
     if (sort === 'popular') orderBy = 'ORDER BY p.downloads_count DESC';
+    if (sort === 'rating') orderBy = 'ORDER BY avg_rating DESC';
 
     db.all(`
-      SELECT p.*, u.username as seller_name, u.avatar as seller_avatar
+      SELECT p.*, u.username as seller_name, u.avatar as seller_avatar,
+        (SELECT AVG(rating) FROM reviews WHERE product_id = p.id) as avg_rating,
+        (SELECT COUNT(*) FROM reviews WHERE product_id = p.id) as reviews_count
       FROM products p
       JOIN users u ON p.seller_id = u.id
       ${whereClause}
@@ -380,6 +383,40 @@ const marketplaceController = {
       }
 
       res.json({ orders });
+    });
+  },
+
+  // Upload product file
+  uploadProductFile: (req, res) => {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    // Verify ownership
+    db.get('SELECT * FROM products WHERE id = ? AND seller_id = ?', [id, userId], (err, product) => {
+      if (err) {
+        return res.status(500).json({ error: 'Database error' });
+      }
+
+      if (!product) {
+        return res.status(404).json({ error: 'Product not found or unauthorized' });
+      }
+
+      // Update product with file URL
+      db.run(`
+        UPDATE products SET file_url = ?, file_name = ?, file_size = ?, updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+      `, [req.file.path, req.file.originalname, req.file.size, id], function(err) {
+        if (err) {
+          console.error('Error updating product file:', err);
+          return res.status(500).json({ error: 'Failed to update product file' });
+        }
+
+        res.json({ message: 'File uploaded successfully', file_url: req.file.path });
+      });
     });
   },
 
