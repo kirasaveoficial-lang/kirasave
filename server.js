@@ -127,6 +127,7 @@ app.use('/api/saves', require('./server/routes/saves'));
 app.use('/api/users', require('./server/routes/users'));
 app.use('/api/admin', require('./server/routes/admin'));
 app.use('/api/tags', require('./server/routes/tags'));
+app.use('/api/marketplace', require('./server/routes/marketplace'));
 
 // 404 handler
 app.use((req, res) => {

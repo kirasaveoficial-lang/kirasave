@@ -149,4 +149,32 @@ router.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, '../../public/index.html'));
 });
 
+router.get('/marketplace', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../public/index.html'));
+});
+
+router.get('/marketplace/:id', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../public/index.html'));
+});
+
+router.get('/marketplace/cart', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../public/index.html'));
+});
+
+router.get('/marketplace/my-products', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../public/index.html'));
+});
+
+router.get('/marketplace/my-orders', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../public/index.html'));
+});
+
+router.get('/marketplace/seller-orders', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../public/index.html'));
+});
+
+router.get('/marketplace/sell', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../public/index.html'));
+});
+
 module.exports = router;

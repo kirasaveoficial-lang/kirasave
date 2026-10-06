@@ -88,6 +88,10 @@ function setupNavigation() {
 
     if (state.user) {
         nav.innerHTML = `
+            <a href="/marketplace" class="text-gray-300 hover:text-purple-400 transition-colors flex items-center gap-2 mr-4">
+                <i class="fas fa-store"></i>
+                <span>Marketplace</span>
+            </a>
             <div class="relative">
                 <button onclick="toggleNotifications()" class="relative p-2 text-gray-300 hover:text-purple-400 transition-colors">
                     <i class="fas fa-bell text-xl"></i>
@@ -141,6 +145,9 @@ function setupNavigation() {
         `;
 
         mobileNav.innerHTML = `
+            <a href="/marketplace" class="block py-2 text-gray-300 hover:text-purple-400">
+                <i class="fas fa-store mr-2"></i>Marketplace
+            </a>
             <div class="flex items-center justify-between py-2 border-b border-gray-700 mb-2">
                 <span class="text-gray-300">Notificações</span>
                 <button onclick="markAllNotificationsAsRead()" class="text-xs text-purple-400 hover:text-purple-300">Marcar todas como lidas</button>
@@ -155,11 +162,18 @@ function setupNavigation() {
         setTimeout(() => createUsernameParticles(state.user.tagType, state.user.tagColor), 100);
     } else {
         nav.innerHTML = `
+            <a href="/marketplace" class="text-gray-300 hover:text-purple-400 transition-colors flex items-center gap-2">
+                <i class="fas fa-store"></i>
+                <span>Marketplace</span>
+            </a>
             <a href="/login" class="text-gray-300 hover:text-purple-400 transition-colors">Entrar</a>
             <a href="/register" class="btn-primary">Cadastrar</a>
         `;
 
         mobileNav.innerHTML = `
+            <a href="/marketplace" class="block py-2 text-gray-300 hover:text-purple-400">
+                <i class="fas fa-store mr-2"></i>Marketplace
+            </a>
             <a href="/login" class="block py-2 text-gray-300 hover:text-purple-400">Entrar</a>
             <a href="/register" class="block py-2 text-gray-300 hover:text-purple-400">Cadastrar</a>
         `;
@@ -247,7 +261,32 @@ function router() {
         case '/admin/users/banned':
             renderAdminBannedUsersPage();
             break;
+        case '/marketplace':
+            renderMarketplacePage();
+            break;
+        case '/marketplace/sell':
+            renderMarketplaceSellPage();
+            break;
+        case '/marketplace/cart':
+            renderMarketplaceCartPage();
+            break;
+        case '/marketplace/my-products':
+            renderMarketplaceMyProductsPage();
+            break;
+        case '/marketplace/my-orders':
+            renderMarketplaceMyOrdersPage();
+            break;
+        case '/marketplace/seller-orders':
+            renderMarketplaceSellerOrdersPage();
+            break;
         default:
+            if (path.startsWith('/marketplace/')) {
+                const id = path.split('/')[2];
+                if (id && !isNaN(id)) {
+                    renderMarketplaceProductPage(id);
+                    break;
+                }
+            }
             // Check if it's a profile page with ID
             if (path.startsWith('/profile/')) {
                 const userId = path.split('/')[2];
@@ -1474,6 +1513,291 @@ function renderAdminBannedUsersPage() {
     `;
 
     loadBannedUsers();
+}
+
+function renderMarketplacePage() {
+    const app = document.getElementById('app');
+    app.innerHTML = `
+        <section class="py-6">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <!-- Header -->
+                <div class="mb-6">
+                    <h1 class="text-3xl font-bold mb-2 font-['Space_Grotesk']">
+                        <span class="gradient-text">🏪 Marketplace</span>
+                    </h1>
+                    <p class="text-gray-400">Encontre produtos, saves e recursos para seus jogos favoritos</p>
+                </div>
+
+                <!-- Search and Filters -->
+                <div class="glass-card p-4 mb-6">
+                    <div class="flex flex-col md:flex gap-4 items-center">
+                        <div class="flex-1 relative">
+                            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
+                            <input type="text" id="marketplace-search" placeholder="Buscar produtos..." class="input-field w-full pl-10" oninput="filterMarketplaceProducts()">
+                        </div>
+                        <select id="marketplace-category" class="input-field md:w-48" onchange="filterMarketplaceProducts()">
+                            <option value="">Todas categorias</option>
+                            <option value="saves">Saves</option>
+                            <option value="mods">Mods</option>
+                            <option value="resources">Recursos</option>
+                            <option value="configs">Configurações</option>
+                        </select>
+                        <select id="marketplace-sort" class="input-field md:w-48" onchange="filterMarketplaceProducts()">
+                            <option value="newest">Mais recentes</option>
+                            <option value="price_asc">Menor preço</option>
+                            <option value="price_desc">Maior preço</option>
+                            <option value="popular">Mais vendidos</option>
+                        </select>
+                        ${state.user ? `
+                        <a href="/marketplace/sell" class="btn-primary text-sm">
+                            <i class="fas fa-plus mr-2"></i>Vender Produto
+                        </a>
+                        ` : ''}
+                    </div>
+                </div>
+
+                <!-- Products Grid -->
+                <div id="marketplace-products" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    <div class="text-center text-gray-400 col-span-full py-12">
+                        <i class="fas fa-spinner fa-spin text-3xl mb-4"></i>
+                        <p>Carregando produtos...</p>
+                    </div>
+                </div>
+
+                <!-- Pagination -->
+                <div id="marketplace-pagination" class="flex justify-center gap-2 mt-6"></div>
+            </div>
+        </section>
+    `;
+
+    loadMarketplaceProducts();
+}
+
+function renderMarketplaceProductPage(id) {
+    const app = document.getElementById('app');
+    app.innerHTML = `
+        <section class="py-6">
+            <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="mb-6">
+                    <a href="/marketplace" class="text-gray-400 hover:text-purple-400 transition-colors text-sm">
+                        <i class="fas fa-arrow-left mr-2"></i>Voltar ao Marketplace
+                    </a>
+                </div>
+
+                <div id="product-details" class="text-center text-gray-400 py-12">
+                    <i class="fas fa-spinner fa-spin text-3xl mb-4"></i>
+                    <p>Carregando produto...</p>
+                </div>
+            </div>
+        </section>
+    `;
+
+    loadMarketplaceProduct(id);
+}
+
+function renderMarketplaceSellPage() {
+    if (!state.user) {
+        window.location.href = '/login';
+        return;
+    }
+
+    const app = document.getElementById('app');
+    app.innerHTML = `
+        <section class="py-6">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="mb-6">
+                    <a href="/marketplace" class="text-gray-400 hover:text-purple-400 transition-colors text-sm">
+                        <i class="fas fa-arrow-left mr-2"></i>Voltar ao Marketplace
+                    </a>
+                </div>
+                <h1 class="text-2xl font-bold mb-6 font-['Space_Grotesk']">
+                    <span class="gradient-text">Vender Produto</span>
+                </h1>
+
+                <div class="glass-card p-6">
+                    <form id="sell-product-form" class="space-y-4">
+                        <div>
+                            <label class="block text-gray-300 text-sm mb-2">Nome do Produto *</label>
+                            <input type="text" id="product-name" required class="input-field" placeholder="Ex: Save Completo GTA V">
+                        </div>
+                        <div>
+                            <label class="block text-gray-300 text-sm mb-2">Descrição</label>
+                            <textarea id="product-description" rows="4" class="input-field" placeholder="Descreva seu produto..."></textarea>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-gray-300 text-sm mb-2">Categoria</label>
+                                <select id="product-category" class="input-field">
+                                    <option value="saves">Saves</option>
+                                    <option value="mods">Mods</option>
+                                    <option value="resources">Recursos</option>
+                                    <option value="configs">Configurações</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-gray-300 text-sm mb-2">Preço (R$) *</label>
+                                <input type="number" id="product-price" required min="0" step="0.01" class="input-field" placeholder="0.00">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-gray-300 text-sm mb-2">URL da Imagem</label>
+                            <input type="url" id="product-image" class="input-field" placeholder="https://...">
+                        </div>
+                        <div>
+                            <label class="block text-gray-300 text-sm mb-2">URL do Arquivo (Mediafire, Mega, etc.)</label>
+                            <input type="url" id="product-file" class="input-field" placeholder="https://...">
+                        </div>
+                        <div>
+                            <label class="block text-gray-300 text-sm mb-2">Tags (separadas por vírgula)</label>
+                            <input type="text" id="product-tags" class="input-field" placeholder="gta, mods, completo">
+                        </div>
+                        <div class="flex gap-4">
+                            <button type="button" onclick="window.location.href='/marketplace'" class="btn-secondary flex-1">Cancelar</button>
+                            <button type="submit" class="btn-primary flex-1">Publicar Produto</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+    `;
+
+    document.getElementById('sell-product-form').addEventListener('submit', handleSellProduct);
+}
+
+function renderMarketplaceCartPage() {
+    if (!state.user) {
+        window.location.href = '/login';
+        return;
+    }
+
+    const app = document.getElementById('app');
+    app.innerHTML = `
+        <section class="py-6">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="mb-6">
+                    <a href="/marketplace" class="text-gray-400 hover:text-purple-400 transition-colors text-sm">
+                        <i class="fas fa-arrow-left mr-2"></i>Voltar ao Marketplace
+                    </a>
+                </div>
+                <h1 class="text-2xl font-bold mb-6 font-['Space_Grotesk']">
+                    <span class="gradient-text">Carrinho</span>
+                </h1>
+
+                <div id="cart-items" class="space-y-4">
+                    <div class="text-center text-gray-400 py-12">
+                        <i class="fas fa-shopping-cart text-4xl mb-4"></i>
+                        <p>Seu carrinho está vazio</p>
+                    </div>
+                </div>
+
+                <div id="cart-summary" class="glass-card p-6 mt-6 hidden">
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="text-lg font-semibold">Total:</span>
+                        <span id="cart-total" class="text-2xl font-bold gradient-text">R$ 0,00</span>
+                    </div>
+                    <button onclick="handleCheckout()" class="btn-primary w-full">Finalizar Compra</button>
+                </div>
+            </div>
+        </section>
+    `;
+
+    loadCart();
+}
+
+function renderMarketplaceMyProductsPage() {
+    if (!state.user) {
+        window.location.href = '/login';
+        return;
+    }
+
+    const app = document.getElementById('app');
+    app.innerHTML = `
+        <section class="py-6">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="mb-6">
+                    <a href="/marketplace" class="text-gray-400 hover:text-purple-400 transition-colors text-sm">
+                        <i class="fas fa-arrow-left mr-2"></i>Voltar ao Marketplace
+                    </a>
+                </div>
+                <h1 class="text-2xl font-bold mb-6 font-['Space_Grotesk']">
+                    <span class="gradient-text">Meus Produtos</span>
+                </h1>
+
+                <div id="my-products" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div class="text-center text-gray-400 col-span-full py-12">
+                        <i class="fas fa-spinner fa-spin text-3xl mb-4"></i>
+                        <p>Carregando seus produtos...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    `;
+
+    loadMyProducts();
+}
+
+function renderMarketplaceMyOrdersPage() {
+    if (!state.user) {
+        window.location.href = '/login';
+        return;
+    }
+
+    const app = document.getElementById('app');
+    app.innerHTML = `
+        <section class="py-6">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="mb-6">
+                    <a href="/marketplace" class="text-gray-400 hover:text-purple-400 transition-colors text-sm">
+                        <i class="fas fa-arrow-left mr-2"></i>Voltar ao Marketplace
+                    </a>
+                </div>
+                <h1 class="text-2xl font-bold mb-6 font-['Space_Grotesk']">
+                    <span class="gradient-text">Minhas Compras</span>
+                </h1>
+
+                <div id="my-orders" class="space-y-4">
+                    <div class="text-center text-gray-400 py-12">
+                        <i class="fas fa-shopping-bag text-4xl mb-4"></i>
+                        <p>Nenhuma compra ainda</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    `;
+
+    loadMyOrders();
+}
+
+function renderMarketplaceSellerOrdersPage() {
+    if (!state.user) {
+        window.location.href = '/login';
+        return;
+    }
+
+    const app = document.getElementById('app');
+    app.innerHTML = `
+        <section class="py-6">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="mb-6">
+                    <a href="/marketplace" class="text-gray-400 hover:text-purple-400 transition-colors text-sm">
+                        <i class="fas fa-arrow-left mr-2"></i>Voltar ao Marketplace
+                    </a>
+                </div>
+                <h1 class="text-2xl font-bold mb-6 font-['Space_Grotesk']">
+                    <span class="gradient-text">Minhas Vendas</span>
+                </h1>
+
+                <div id="seller-orders" class="space-y-4">
+                    <div class="text-center text-gray-400 py-12">
+                        <i class="fas fa-chart-line text-4xl mb-4"></i>
+                        <p>Nenhuma venda ainda</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    `;
+
+    loadSellerOrders();
 }
 
 // ===== Data Loading Functions =====
@@ -4984,6 +5308,462 @@ async function markAllNotificationsAsRead() {
         console.error('Failed to mark all notifications as read:', error);
         showToast('Erro ao marcar notificações como lidas', 'error');
     }
+}
+
+// ===== Marketplace Functions =====
+let marketplacePage = 1;
+
+async function loadMarketplaceProduct(id) {
+    try {
+        const product = await apiCall(`/marketplace/products/${id}`);
+        renderMarketplaceProduct(product);
+    } catch (error) {
+        console.error('Failed to load product:', error);
+        document.getElementById('product-details').innerHTML = `
+            <div class="text-center text-gray-400 py-12">
+                <i class="fas fa-exclamation-circle text-4xl mb-4"></i>
+                <p>Produto não encontrado</p>
+            </div>
+        `;
+    }
+}
+
+function renderMarketplaceProduct(product) {
+    const container = document.getElementById('product-details');
+    if (!container) return;
+
+    container.innerHTML = `
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Image -->
+            <div class="aspect-video bg-gray-800 rounded-xl overflow-hidden">
+                ${product.image_url
+                    ? `<img src="${product.image_url}" alt="${product.name}" class="w-full h-full object-cover">`
+                    : `<div class="w-full h-full flex items-center justify-center text-gray-600">
+                        <i class="fas fa-image text-6xl"></i>
+                       </div>`
+                }
+            </div>
+
+            <!-- Info -->
+            <div>
+                <h1 class="text-3xl font-bold mb-2 font-['Space_Grotesk'] gradient-text">${product.name}</h1>
+                <div class="flex items-center gap-4 mb-4">
+                    <div class="flex items-center gap-2">
+                        <img src="${product.seller_avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(product.seller_name)}&background=8b5cf6&color=fff`}" alt="${product.seller_name}" class="w-8 h-8 rounded-full">
+                        <span class="text-gray-400">${product.seller_name}</span>
+                    </div>
+                    <span class="text-gray-500 text-sm">
+                        <i class="fas fa-download mr-1"></i>${product.downloads_count}
+                        <i class="fas fa-eye ml-2 mr-1"></i>${product.views_count}
+                    </span>
+                </div>
+
+                <div class="glass-card p-4 mb-4">
+                    <div class="text-3xl font-bold gradient-text mb-2">R$ ${parseFloat(product.price).toFixed(2)}</div>
+                    <p class="text-gray-400 text-sm">Produto digital com download imediato após compra</p>
+                </div>
+
+                ${product.description ? `
+                <div class="glass-card p-4 mb-4">
+                    <h3 class="font-semibold text-white mb-2">Descrição</h3>
+                    <p class="text-gray-400 whitespace-pre-wrap">${product.description}</p>
+                </div>
+                ` : ''}
+
+                ${product.category ? `
+                <div class="flex gap-2 mb-4">
+                    <span class="px-3 py-1 bg-purple-500/20 text-purple-400 rounded-full text-sm">${product.category}</span>
+                    ${product.subcategory ? `<span class="px-3 py-1 bg-gray-700 text-gray-400 rounded-full text-sm">${product.subcategory}</span>` : ''}
+                </div>
+                ` : ''}
+
+                ${state.user ? `
+                <button onclick="addToCart(${product.id})" class="btn-primary w-full py-3 text-lg">
+                    <i class="fas fa-cart-plus mr-2"></i>Adicionar ao Carrinho
+                </button>
+                ` : `
+                <div class="glass-card p-4 text-center">
+                    <p class="text-gray-400 mb-3">Você precisa estar logado para comprar</p>
+                    <a href="/login" class="btn-primary inline-block">Entrar</a>
+                </div>
+                `}
+            </div>
+        </div>
+    `;
+}
+
+async function addToCart(productId) {
+    try {
+        await apiCall('/marketplace/cart', {
+            method: 'POST',
+            body: JSON.stringify({ product_id: productId })
+        });
+        showToast('Produto adicionado ao carrinho!', 'success');
+    } catch (error) {
+        console.error('Failed to add to cart:', error);
+        showToast('Erro ao adicionar ao carrinho', 'error');
+    }
+}
+
+async function loadMarketplaceProducts(page = 1) {
+    const search = document.getElementById('marketplace-search')?.value || '';
+    const category = document.getElementById('marketplace-category')?.value || '';
+    const sort = document.getElementById('marketplace-sort')?.value || 'newest';
+
+    try {
+        const data = await apiCall(`/marketplace/products?page=${page}&search=${encodeURIComponent(search)}&category=${category}&sort=${sort}`);
+        renderMarketplaceProducts(data.products);
+        renderMarketplacePagination(data.pagination);
+    } catch (error) {
+        console.error('Failed to load marketplace products:', error);
+        showToast('Erro ao carregar produtos', 'error');
+    }
+}
+
+function renderMarketplaceProducts(products) {
+    const container = document.getElementById('marketplace-products');
+    if (!container) return;
+
+    if (products.length === 0) {
+        container.innerHTML = `
+            <div class="text-center text-gray-400 col-span-full py-12">
+                <i class="fas fa-box-open text-4xl mb-4"></i>
+                <p>Nenhum produto encontrado</p>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = products.map(product => `
+        <div class="glass-card p-4 hover:border-purple-500/50 transition-all cursor-pointer" onclick="window.location.href='/marketplace/${product.id}'">
+            <div class="aspect-video bg-gray-800 rounded-lg mb-3 overflow-hidden">
+                ${product.image_url
+                    ? `<img src="${product.image_url}" alt="${product.name}" class="w-full h-full object-cover">`
+                    : `<div class="w-full h-full flex items-center justify-center text-gray-600">
+                        <i class="fas fa-image text-4xl"></i>
+                       </div>`
+                }
+            </div>
+            <h3 class="font-semibold text-white mb-1 truncate">${product.name}</h3>
+            <p class="text-gray-400 text-sm mb-2">${product.seller_name}</p>
+            <div class="flex justify-between items-center">
+                <span class="text-purple-400 font-bold">R$ ${parseFloat(product.price).toFixed(2)}</span>
+                <span class="text-gray-500 text-xs"><i class="fas fa-download mr-1"></i>${product.downloads_count}</span>
+            </div>
+        </div>
+    `).join('');
+}
+
+function renderMarketplacePagination(pagination) {
+    const container = document.getElementById('marketplace-pagination');
+    if (!container) return;
+
+    if (pagination.pages <= 1) {
+        container.innerHTML = '';
+        return;
+    }
+
+    let html = '';
+    for (let i = 1; i <= pagination.pages; i++) {
+        html += `
+            <button onclick="loadMarketplaceProducts(${i})" class="px-4 py-2 rounded-lg ${i === pagination.page ? 'bg-purple-600 text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'} transition-colors">
+                ${i}
+            </button>
+        `;
+    }
+    container.innerHTML = html;
+}
+
+function filterMarketplaceProducts() {
+    loadMarketplaceProducts(1);
+}
+
+async function handleSellProduct(e) {
+    e.preventDefault();
+
+    const name = document.getElementById('product-name').value;
+    const description = document.getElementById('product-description').value;
+    const category = document.getElementById('product-category').value;
+    const price = document.getElementById('product-price').value;
+    const image_url = document.getElementById('product-image').value;
+    const file_url = document.getElementById('product-file').value;
+    const tags = document.getElementById('product-tags').value.split(',').map(t => t.trim()).filter(t => t);
+
+    try {
+        await apiCall('/marketplace/products', {
+            method: 'POST',
+            body: JSON.stringify({
+                name,
+                description,
+                category,
+                price,
+                image_url,
+                file_url,
+                tags
+            })
+        });
+
+        showToast('Produto criado com sucesso! Aguardando aprovação.', 'success');
+        window.location.href = '/marketplace/my-products';
+    } catch (error) {
+        console.error('Failed to create product:', error);
+        showToast('Erro ao criar produto', 'error');
+    }
+}
+
+async function loadCart() {
+    try {
+        const data = await apiCall('/marketplace/cart');
+        renderCart(data.cart, data.total);
+    } catch (error) {
+        console.error('Failed to load cart:', error);
+        showToast('Erro ao carregar carrinho', 'error');
+    }
+}
+
+function renderCart(cartItems, total) {
+    const container = document.getElementById('cart-items');
+    const summary = document.getElementById('cart-summary');
+    const totalEl = document.getElementById('cart-total');
+
+    if (!container) return;
+
+    if (cartItems.length === 0) {
+        container.innerHTML = `
+            <div class="text-center text-gray-400 py-12">
+                <i class="fas fa-shopping-cart text-4xl mb-4"></i>
+                <p>Seu carrinho está vazio</p>
+            </div>
+        `;
+        summary?.classList.add('hidden');
+        return;
+    }
+
+    container.innerHTML = cartItems.map(item => `
+        <div class="glass-card p-4 flex gap-4">
+            <div class="w-24 h-24 bg-gray-800 rounded-lg overflow-hidden flex-shrink-0">
+                ${item.image_url
+                    ? `<img src="${item.image_url}" alt="${item.name}" class="w-full h-full object-cover">`
+                    : `<div class="w-full h-full flex items-center justify-center text-gray-600">
+                        <i class="fas fa-image text-2xl"></i>
+                       </div>`
+                }
+            </div>
+            <div class="flex-1">
+                <h3 class="font-semibold text-white">${item.name}</h3>
+                <p class="text-gray-400 text-sm">${item.seller_name}</p>
+                <div class="flex justify-between items-center mt-2">
+                    <span class="text-purple-400 font-bold">R$ ${parseFloat(item.price).toFixed(2)}</span>
+                    <button onclick="removeFromCart(${item.product_id})" class="text-red-400 hover:text-red-300 text-sm">
+                        <i class="fas fa-trash mr-1"></i>Remover
+                    </button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+
+    if (summary) {
+        summary.classList.remove('hidden');
+    }
+    if (totalEl) {
+        totalEl.textContent = `R$ ${parseFloat(total).toFixed(2)}`;
+    }
+}
+
+async function removeFromCart(productId) {
+    try {
+        await apiCall(`/marketplace/cart/${productId}`, { method: 'DELETE' });
+        showToast('Produto removido do carrinho', 'success');
+        loadCart();
+    } catch (error) {
+        console.error('Failed to remove from cart:', error);
+        showToast('Erro ao remover produto', 'error');
+    }
+}
+
+async function handleCheckout() {
+    if (!confirm('Deseja finalizar a compra? Este é um checkout simulado para demonstração.')) {
+        return;
+    }
+
+    try {
+        const data = await apiCall('/marketplace/orders', { method: 'POST' });
+        showToast('Pedido criado com sucesso! ID: ' + data.order_id, 'success');
+        window.location.href = '/marketplace/my-orders';
+    } catch (error) {
+        console.error('Failed to create order:', error);
+        showToast('Erro ao criar pedido', 'error');
+    }
+}
+
+async function loadMyProducts() {
+    try {
+        const data = await apiCall('/marketplace/my-products');
+        renderMyProducts(data.products);
+    } catch (error) {
+        console.error('Failed to load my products:', error);
+        showToast('Erro ao carregar produtos', 'error');
+    }
+}
+
+function renderMyProducts(products) {
+    const container = document.getElementById('my-products');
+    if (!container) return;
+
+    if (products.length === 0) {
+        container.innerHTML = `
+            <div class="text-center text-gray-400 col-span-full py-12">
+                <i class="fas fa-box-open text-4xl mb-4"></i>
+                <p>Você ainda não publicou nenhum produto</p>
+                <a href="/marketplace/sell" class="btn-primary mt-4 inline-block">Criar Produto</a>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = products.map(product => `
+        <div class="glass-card p-4">
+            <div class="aspect-video bg-gray-800 rounded-lg mb-3 overflow-hidden">
+                ${product.image_url
+                    ? `<img src="${product.image_url}" alt="${product.name}" class="w-full h-full object-cover">`
+                    : `<div class="w-full h-full flex items-center justify-center text-gray-600">
+                        <i class="fas fa-image text-4xl"></i>
+                       </div>`
+                }
+            </div>
+            <h3 class="font-semibold text-white mb-1 truncate">${product.name}</h3>
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-purple-400 font-bold">R$ ${parseFloat(product.price).toFixed(2)}</span>
+                <span class="text-xs px-2 py-1 rounded ${product.status === 'approved' ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'}">
+                    ${product.status === 'approved' ? 'Aprovado' : 'Pendente'}
+                </span>
+            </div>
+            <div class="flex gap-2">
+                <span class="text-gray-500 text-xs"><i class="fas fa-download mr-1"></i>${product.downloads_count}</span>
+                <span class="text-gray-500 text-xs"><i class="fas fa-eye mr-1"></i>${product.views_count}</span>
+            </div>
+        </div>
+    `).join('');
+}
+
+async function loadMyOrders() {
+    try {
+        const data = await apiCall('/marketplace/my-orders');
+        renderMyOrders(data.orders);
+    } catch (error) {
+        console.error('Failed to load my orders:', error);
+        showToast('Erro ao carregar pedidos', 'error');
+    }
+}
+
+function renderMyOrders(orders) {
+    const container = document.getElementById('my-orders');
+    if (!container) return;
+
+    if (orders.length === 0) {
+        container.innerHTML = `
+            <div class="text-center text-gray-400 py-12">
+                <i class="fas fa-shopping-bag text-4xl mb-4"></i>
+                <p>Nenhuma compra ainda</p>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = orders.map(order => `
+        <div class="glass-card p-4">
+            <div class="flex justify-between items-start mb-3">
+                <div>
+                    <h3 class="font-semibold text-white">Pedido #${order.id}</h3>
+                    <p class="text-gray-400 text-sm">${new Date(order.created_at).toLocaleString()}</p>
+                </div>
+                <span class="text-xs px-2 py-1 rounded ${order.payment_status === 'paid' ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'}">
+                    ${order.payment_status === 'paid' ? 'Pago' : 'Pendente'}
+                </span>
+            </div>
+            <div class="space-y-2">
+                ${order.items?.map(item => `
+                    <div class="flex items-center gap-3 p-2 bg-gray-800/50 rounded">
+                        <div class="w-12 h-12 bg-gray-700 rounded overflow-hidden">
+                            ${item.product_image
+                                ? `<img src="${item.product_image}" alt="${item.product_name}" class="w-full h-full object-cover">`
+                                : `<div class="w-full h-full flex items-center justify-center text-gray-600">
+                                    <i class="fas fa-image"></i>
+                                   </div>`
+                            }
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-white text-sm">${item.product_name}</p>
+                            <p class="text-gray-400 text-xs">${item.seller_name}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-purple-400 font-bold text-sm">R$ ${parseFloat(item.price).toFixed(2)}</p>
+                            ${order.payment_status === 'paid' ? `
+                                <a href="/api/marketplace/products/${item.product_id}/download" target="_blank" class="text-green-400 text-xs hover:text-green-300">
+                                    <i class="fas fa-download mr-1"></i>Baixar
+                                </a>
+                            ` : ''}
+                        </div>
+                    </div>
+                `).join('') || ''}
+            </div>
+            <div class="flex justify-between items-center mt-3 pt-3 border-t border-gray-700">
+                <span class="text-gray-400">Total:</span>
+                <span class="text-xl font-bold gradient-text">R$ ${parseFloat(order.total_amount).toFixed(2)}</span>
+            </div>
+        </div>
+    `).join('');
+}
+
+async function loadSellerOrders() {
+    try {
+        const data = await apiCall('/marketplace/seller-orders');
+        renderSellerOrders(data.orders);
+    } catch (error) {
+        console.error('Failed to load seller orders:', error);
+        showToast('Erro ao carregar vendas', 'error');
+    }
+}
+
+function renderSellerOrders(orders) {
+    const container = document.getElementById('seller-orders');
+    if (!container) return;
+
+    if (orders.length === 0) {
+        container.innerHTML = `
+            <div class="text-center text-gray-400 py-12">
+                <i class="fas fa-chart-line text-4xl mb-4"></i>
+                <p>Nenhuma venda ainda</p>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = orders.map(order => `
+        <div class="glass-card p-4">
+            <div class="flex justify-between items-start mb-3">
+                <div>
+                    <h3 class="font-semibold text-white">Pedido #${order.order_id}</h3>
+                    <p class="text-gray-400 text-sm">${new Date(order.order_created_at).toLocaleString()}</p>
+                </div>
+                <span class="text-purple-400 font-bold">R$ ${parseFloat(order.price).toFixed(2)}</span>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-gray-700 rounded overflow-hidden">
+                    ${order.product_image
+                        ? `<img src="${order.product_image}" alt="${order.product_name}" class="w-full h-full object-cover">`
+                        : `<div class="w-full h-full flex items-center justify-center text-gray-600">
+                            <i class="fas fa-image"></i>
+                           </div>`
+                    }
+                </div>
+                <div class="flex-1">
+                    <p class="text-white text-sm">${order.product_name}</p>
+                    <p class="text-gray-400 text-xs">Comprador: ${order.buyer_name}</p>
+                </div>
+            </div>
+        </div>
+    `).join('');
 }
 
 // ===== Toast Notifications =====

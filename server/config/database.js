@@ -478,6 +478,76 @@ function initializeSQLiteTables(db) {
       )
     `);
 
+    // Marketplace - Products table
+    db.run(`
+      CREATE TABLE IF NOT EXISTS products (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        seller_id INTEGER NOT NULL,
+        name TEXT NOT NULL,
+        description TEXT,
+        category TEXT,
+        subcategory TEXT,
+        price REAL NOT NULL DEFAULT 0.00,
+        image_url TEXT,
+        file_url TEXT,
+        file_name TEXT,
+        file_size INTEGER,
+        tags TEXT,
+        status TEXT DEFAULT 'pending',
+        downloads_count INTEGER DEFAULT 0,
+        views_count INTEGER DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (seller_id) REFERENCES users(id) ON DELETE CASCADE
+      )
+    `);
+
+    // Marketplace - Orders table
+    db.run(`
+      CREATE TABLE IF NOT EXISTS orders (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        buyer_id INTEGER NOT NULL,
+        total_amount REAL NOT NULL,
+        status TEXT DEFAULT 'pending',
+        payment_method TEXT,
+        payment_status TEXT DEFAULT 'pending',
+        transaction_id TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (buyer_id) REFERENCES users(id) ON DELETE CASCADE
+      )
+    `);
+
+    // Marketplace - Order items table
+    db.run(`
+      CREATE TABLE IF NOT EXISTS order_items (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        order_id INTEGER NOT NULL,
+        product_id INTEGER NOT NULL,
+        seller_id INTEGER NOT NULL,
+        price REAL NOT NULL,
+        quantity INTEGER DEFAULT 1,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+        FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+        FOREIGN KEY (seller_id) REFERENCES users(id) ON DELETE CASCADE
+      )
+    `);
+
+    // Marketplace - Cart table
+    db.run(`
+      CREATE TABLE IF NOT EXISTS cart (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        product_id INTEGER NOT NULL,
+        quantity INTEGER DEFAULT 1,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(user_id, product_id),
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+      )
+    `);
+
     console.log('SQLite tables initialized');
   });
 }
@@ -700,6 +770,68 @@ async function initializePostgreSQLTables(pool) {
         is_cover BOOLEAN DEFAULT FALSE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (save_id) REFERENCES saves(id) ON DELETE CASCADE
+      )`,
+
+      // Marketplace - Products table
+      `CREATE TABLE IF NOT EXISTS products (
+        id SERIAL PRIMARY KEY,
+        seller_id INTEGER NOT NULL,
+        name VARCHAR(255) NOT NULL,
+        description TEXT,
+        category VARCHAR(100),
+        subcategory VARCHAR(100),
+        price DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+        image_url VARCHAR(500),
+        file_url VARCHAR(500),
+        file_name VARCHAR(255),
+        file_size INTEGER,
+        tags TEXT[],
+        status VARCHAR(50) DEFAULT 'pending',
+        downloads_count INTEGER DEFAULT 0,
+        views_count INTEGER DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (seller_id) REFERENCES users(id) ON DELETE CASCADE
+      )`,
+
+      // Marketplace - Orders table
+      `CREATE TABLE IF NOT EXISTS orders (
+        id SERIAL PRIMARY KEY,
+        buyer_id INTEGER NOT NULL,
+        total_amount DECIMAL(10, 2) NOT NULL,
+        status VARCHAR(50) DEFAULT 'pending',
+        payment_method VARCHAR(50),
+        payment_status VARCHAR(50) DEFAULT 'pending',
+        transaction_id VARCHAR(255),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (buyer_id) REFERENCES users(id) ON DELETE CASCADE
+      )`,
+
+      // Marketplace - Order items table
+      `CREATE TABLE IF NOT EXISTS order_items (
+        id SERIAL PRIMARY KEY,
+        order_id INTEGER NOT NULL,
+        product_id INTEGER NOT NULL,
+        seller_id INTEGER NOT NULL,
+        price DECIMAL(10, 2) NOT NULL,
+        quantity INTEGER DEFAULT 1,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+        FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+        FOREIGN KEY (seller_id) REFERENCES users(id) ON DELETE CASCADE
+      )`,
+
+      // Marketplace - Cart table
+      `CREATE TABLE IF NOT EXISTS cart (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL,
+        product_id INTEGER NOT NULL,
+        quantity INTEGER DEFAULT 1,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(user_id, product_id),
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
       )`
     ];
 
