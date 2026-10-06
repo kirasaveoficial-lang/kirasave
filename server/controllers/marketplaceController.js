@@ -93,8 +93,15 @@ const marketplaceController = {
       return res.status(400).json({ error: 'Name and price are required' });
     }
 
-    // Parse tags if it's a string
-    const tagsArray = typeof tags === 'string' ? JSON.parse(tags) : tags;
+    // Parse tags if it's a string, otherwise use empty array
+    let tagsArray = [];
+    if (tags) {
+      try {
+        tagsArray = typeof tags === 'string' ? JSON.parse(tags) : tags;
+      } catch (e) {
+        tagsArray = tags.split(',').map(t => t.trim()).filter(t => t);
+      }
+    }
 
     db.run(`
       INSERT INTO products (seller_id, name, description, category, subcategory, price, image_url, file_url, file_name, file_size, tags, status)
