@@ -21,7 +21,7 @@ router.get('/activity-logs', authenticateToken, requireAdmin, adminController.ge
 router.get('/games', authenticateToken, requireAdmin, adminController.getGames);
 router.post('/games', authenticateToken, requireAdmin, adminController.createGame);
 router.put('/games/:id', authenticateToken, requireAdmin, adminController.updateGame);
-router.post('/games/:id/image', authenticateToken, requireAdmin, uploadGameCoverCloudinary.single('image'), adminController.uploadGameImage);
+router.post('/games/:id/image', authenticateToken, requireAdmin, uploadGameCoverCloudinary, adminController.uploadGameImage);
 router.delete('/games/:id', authenticateToken, requireAdmin, adminController.deleteGame);
 
 // All saves management
