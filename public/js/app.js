@@ -88,10 +88,6 @@ function setupNavigation() {
 
     if (state.user) {
         nav.innerHTML = `
-            <a href="/marketplace" class="text-gray-300 hover:text-purple-400 transition-colors flex items-center gap-2 mr-4">
-                <i class="fas fa-store"></i>
-                <span>Marketplace</span>
-            </a>
             <div class="relative">
                 <button onclick="toggleNotifications()" class="relative p-2 text-gray-300 hover:text-purple-400 transition-colors">
                     <i class="fas fa-bell text-xl"></i>
@@ -149,9 +145,6 @@ function setupNavigation() {
         `;
 
         mobileNav.innerHTML = `
-            <a href="/marketplace" class="block py-2 text-gray-300 hover:text-purple-400">
-                <i class="fas fa-store mr-2"></i>Marketplace
-            </a>
             <div class="flex items-center justify-between py-2 border-b border-gray-700 mb-2">
                 <span class="text-gray-300">Notificações</span>
                 <button onclick="markAllNotificationsAsRead()" class="text-xs text-purple-400 hover:text-purple-300">Marcar todas como lidas</button>
@@ -175,9 +168,6 @@ function setupNavigation() {
         `;
 
         mobileNav.innerHTML = `
-            <a href="/marketplace" class="block py-2 text-gray-300 hover:text-purple-400">
-                <i class="fas fa-store mr-2"></i>Marketplace
-            </a>
             <a href="/login" class="block py-2 text-gray-300 hover:text-purple-400">Entrar</a>
             <a href="/register" class="block py-2 text-gray-300 hover:text-purple-400">Cadastrar</a>
         `;
